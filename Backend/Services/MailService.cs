@@ -5,13 +5,13 @@ using Backend.Configurations;
 
 namespace Backend.Services;
 
-public class MailClient
+public class MailService
 {
     private MailConfiguration cfg;
     private int port;
     private bool useSsl;
 
-    public MailClient(MailConfiguration config)
+    public MailService(MailConfiguration config)
     {
         cfg = config;
         port = int.Parse(cfg.Port);
