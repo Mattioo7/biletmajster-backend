@@ -1,11 +1,16 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// builder.Services.AddDbContext<CoreDbContext>(
+//     opts => opts.UseNpgsql(builder.Configuration["DatabaseConnectionString"])
+// );
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+Console.WriteLine($"Config: {builder.Configuration["HduhcikTescik"]}");
+Console.WriteLine($"Config: {builder.Configuration["HduhcikPytul"]}");
 
 var app = builder.Build();
 
@@ -17,9 +22,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
