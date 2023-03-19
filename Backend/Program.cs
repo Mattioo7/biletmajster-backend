@@ -8,15 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 // );
 
 // Singletons
-builder.Services.AddSingleton(new MailConfiguration(
-    builder.Configuration["MailHost"]!,
-    builder.Configuration["MailPort"]!,
-    builder.Configuration["MailUseSsl"]!,
-    builder.Configuration["MailUser"]!,
-    builder.Configuration["MailPassword"]!,
-    builder.Configuration["MailSender"]!,
-    builder.Configuration["MailSenderMail"]!
-));
+builder.Services.AddSingleton(
+    builder.Configuration.GetRequiredSection("Mail").Get<MailConfiguration>()!
+);
 
 // Scoped
 builder.Services.AddScoped<MailService>();

@@ -15,7 +15,7 @@ public class MailService
     {
         cfg = config;
         port = int.Parse(cfg.Port);
-        useSsl = bool.Parse(cfg.UseSsl);
+        useSsl = cfg.UseSsl;
     }
 
     public virtual async Task SendMailAsync(string Recipient, string RecipientMail, string Subject, string Body, bool UseHtml = false, CancellationToken ct = default)

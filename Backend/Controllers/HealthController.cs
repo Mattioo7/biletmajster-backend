@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Backend.Contracts;
 
-namespace biletmajster_backend.Controllers;
+namespace Backend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
@@ -13,9 +14,9 @@ public class HealthController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet(Name = "GetWeatherForecast")]
-    public string Get()
+    [HttpGet]
+    public ActionResult<HealthDto> Get()
     {
-        return $"{DateTime.Now} OK";
+        return Ok(new HealthDto("OK", DateTime.Now));
     }
 }
