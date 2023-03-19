@@ -1,11 +1,12 @@
 using MailKit.Net.Smtp;
 using MailKit;
 using MimeKit;
+using Backend.Interfaces;
 using Backend.Configurations;
 
 namespace Backend.Services;
 
-public class MailService
+public class MailService : ICustomMailService
 {
     private MailConfiguration cfg;
     private int port;
