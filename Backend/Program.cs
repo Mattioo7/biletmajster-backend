@@ -1,7 +1,23 @@
+
+//Data base:
+using biletmajster_backend.Database;
+using biletmajster_backend.Database.Entities;
+using biletmajster_backend.Database.Repositories;
+using biletmajster_backend.Database.Repositories.Interfaces;
+
+
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 using Backend.Configurations;
 using Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
+var configuration = builder.Configuration;
+
+// Add services to the container.
 
 // builder.Services.AddDbContext<CoreDbContext>(
 //     opts => opts.UseNpgsql(builder.Configuration["DatabaseConnectionString"])
@@ -14,6 +30,18 @@ builder.Services.AddSingleton(
 
 // Scoped
 builder.Services.AddScoped<MailService>();
+
+//Odkomentowa� i zmieni� ten usesql
+
+//services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(configuration.GetConnectionString("DefaultLocal")));
+//services.AddIdentity<ApplicationUser, IdentityRole>(config =>
+//{
+//    config.SignIn.RequireConfirmedEmail = false;
+//}).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+//services.AddScoped<IApplicationUserRepositories, ApplicationUserRepositories>();
+
+// Data Base Section:
+
 
 builder.Services.AddControllers();
 
