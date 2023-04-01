@@ -14,13 +14,10 @@ using Backend.Configurations;
 using Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
 var services = builder.Services;
 var configuration = builder.Configuration;
 
 // Add services to the container.
-var builder = WebApplication.CreateBuilder(args);
 
 // builder.Services.AddDbContext<CoreDbContext>(
 //     opts => opts.UseNpgsql(builder.Configuration["DatabaseConnectionString"])
