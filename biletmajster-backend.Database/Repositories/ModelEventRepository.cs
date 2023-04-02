@@ -12,29 +12,32 @@ namespace biletmajster_backend.Database.Repositories
     public class ModelEventRepository : BaseRepository<ModelEvent>, IModelEventRepository
     {
         protected override DbSet<ModelEvent> DbSet => mDbContext.ModelEvents;
-        public ModelEventRepository(ApplicationDbContext dbContext) : base(dbContext){ }
+        public ModelEventRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
         //Interface Implementation
-        public bool AddEvent(ModelEvent _event)
+        public async Task<bool> AddEvent(ModelEvent _event)
         {
-            DbSet.Add(_event);
-            return this.SaveChanges();
+            await mDbContext.Places.AddRangeAsync(_event.Places);
+            // TODO: Use ICategoryInterface to update!
+            mDbContext.Categories.UpdateRange(_event.Categories); 
+
+            await DbSet.AddAsync(_event);
+            return await SaveChanges();
         }
-        public bool SaveChanges()
+        public async Task<bool> SaveChanges()
         {
-            var saved = mDbContext.SaveChanges();
-            return saved > 0 ? true : false;
+            var saved = await mDbContext.SaveChangesAsync();
+            return saved > 0;
         }
 
-        public ModelEvent GetEventById(int id)
+        public async Task<ModelEvent> GetEventById(int id)
         {
-            var ret = DbSet.FindAsync(id).Result;
-            return ret;
+            return await DbSet.FindAsync(id);
         }
 
-        public List<ModelEvent> GetAllEvents()
+        public async Task<List<ModelEvent>> GetAllEvents()
         {
-            return DbSet.ToList();
+            return await DbSet.ToListAsync();
         }
     }
 }

@@ -7,15 +7,9 @@ using System.Threading.Tasks;
 
 namespace biletmajster_backend.Database.Repositories.Interfaces
 {
-    public interface IModelEventRepository
+    public interface IPlaceRepository
     {
-        //GET:
-        public Task<ModelEvent> GetEventById(int id);
-        public Task<List<ModelEvent>> GetAllEvents();
-
-
-        public Task<bool> AddEvent(ModelEvent _event);
-        
+        public Task<bool> AddPlace(Place place);
         public Task<bool> SaveChanges();
     }
 }

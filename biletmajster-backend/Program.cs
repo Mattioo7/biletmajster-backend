@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Backend.Configurations;
 using Backend.Services;
-
+using Microsoft.EntityFrameworkCore.Query;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -32,14 +32,15 @@ builder.Services.AddSingleton(
 // Scoped
 builder.Services.AddScoped<MailService>();
 
-//services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b=> b.MigrationsAssembly("biletmajster-backend")));
-services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(configuration.GetConnectionString("LocalApi"), builder =>
-{
-    builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
-}));
+services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b=> b.MigrationsAssembly("biletmajster-backend")));
+//services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(configuration.GetConnectionString("LocalApi"), builder =>
+//{
+//    builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+//}));
 
 services.AddScoped<ICategoriesRepository, CategoriesRepository>();
 services.AddScoped<IModelEventRepository, ModelEventRepository>();
+services.AddScoped<IPlaceRepository,PlaceRepository>();
 
 // Data Base Section:
 
