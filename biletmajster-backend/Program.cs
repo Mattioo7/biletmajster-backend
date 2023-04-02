@@ -1,17 +1,21 @@
 
 //Data base:
+
+using System.Text;
 using biletmajster_backend.Database;
-using biletmajster_backend.Database.Entities;
 using biletmajster_backend.Database.Repositories;
 using biletmajster_backend.Database.Repositories.Interfaces;
-
-
-using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 using Backend.Configurations;
+using Backend.Interfaces;
 using Backend.Services;
+using biletmajster_backend.Interfaces;
+using biletmajster_backend.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+
 using Microsoft.EntityFrameworkCore.Query;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,9 +24,22 @@ var configuration = builder.Configuration;
 
 // Add services to the container.
 
-// builder.Services.AddDbContext<CoreDbContext>(
-//     opts => opts.UseNpgsql(builder.Configuration["DatabaseConnectionString"])
-// );
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidAudience = configuration["Jwt:Audience"],
+            ValidIssuer = configuration["Jwt:Issuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Token"]))
+        };
+    });
+
+services.AddLogging();
 
 // Singletons
 builder.Services.AddSingleton(
@@ -30,16 +47,22 @@ builder.Services.AddSingleton(
 );
 
 // Scoped
-builder.Services.AddScoped<MailService>();
+builder.Services.AddScoped<ICustomMailService, MailService>();
 
 services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b=> b.MigrationsAssembly("biletmajster-backend")));
-//services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(configuration.GetConnectionString("LocalApi"), builder =>
-//{
-//    builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
-//}));
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+// services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(configuration.GetConnectionString("LocalApi"), builder =>
+// {
+//     builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+// }));
 
 services.AddScoped<ICategoriesRepository, CategoriesRepository>();
 services.AddScoped<IModelEventRepository, ModelEventRepository>();
+services.AddScoped<IAccountConfirmationCodeRepository, AccountConfirmationCodeRepository>();
+services.AddScoped<IOrganizersRepository, OrganizersRepository>();
+services.AddScoped<IConfirmationService, ConfirmationService>();
+services.AddScoped<IOrganizerIdentityManager, OrganizerIdentityManager>();
 services.AddScoped<IPlaceRepository,PlaceRepository>();
 
 // Data Base Section:

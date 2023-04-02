@@ -18,7 +18,7 @@ namespace biletmajster_backend.Domain.DTOS
     /// 
     /// </summary>
     [DataContract]
-    public partial class Organizer : IEquatable<Organizer>
+    public partial class OrganizerDTO : IEquatable<OrganizerDTO>
     { 
         /// <summary>
         /// Gets or Sets Id
@@ -53,7 +53,7 @@ namespace biletmajster_backend.Domain.DTOS
         /// </summary>
 
         [DataMember(Name="events")]
-        public List<ModelEvent> Events { get; set; }
+        public List<ModelEventDTO> Events { get; set; }
 
         /// <summary>
         /// User Status
@@ -66,12 +66,12 @@ namespace biletmajster_backend.Domain.DTOS
             /// Enum PendingEnum for pending
             /// </summary>
             [EnumMember(Value = "pending")]
-            PendingEnum = 0,
+            Pending = 0,
             /// <summary>
             /// Enum ConfirmedEnum for confirmed
             /// </summary>
             [EnumMember(Value = "confirmed")]
-            ConfirmedEnum = 1        }
+            Confirmed = 1        }
 
         /// <summary>
         /// User Status
@@ -88,7 +88,7 @@ namespace biletmajster_backend.Domain.DTOS
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("class Organizer {\n");
+            sb.Append("class OrganizerDTO {\n");
             sb.Append("  Id: ").Append(Id).Append("\n");
             sb.Append("  Name: ").Append(Name).Append("\n");
             sb.Append("  Email: ").Append(Email).Append("\n");
@@ -117,15 +117,15 @@ namespace biletmajster_backend.Domain.DTOS
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((Organizer)obj);
+            return obj.GetType() == GetType() && Equals((OrganizerDTO)obj);
         }
 
         /// <summary>
-        /// Returns true if Organizer instances are equal
+        /// Returns true if OrganizerDTO instances are equal
         /// </summary>
-        /// <param name="other">Instance of Organizer to be compared</param>
+        /// <param name="other">Instance of OrganizerDTO to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals(Organizer other)
+        public bool Equals(OrganizerDTO other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -192,12 +192,12 @@ namespace biletmajster_backend.Domain.DTOS
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(Organizer left, Organizer right)
+        public static bool operator ==(OrganizerDTO left, OrganizerDTO right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(Organizer left, Organizer right)
+        public static bool operator !=(OrganizerDTO left, OrganizerDTO right)
         {
             return !Equals(left, right);
         }

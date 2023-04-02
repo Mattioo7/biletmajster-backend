@@ -9,21 +9,44 @@
  */
 
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
+using AutoMapper;
+using Backend.Interfaces;
 using biletmajster_backend.Attributes;
+using biletmajster_backend.Database.Entities;
+using biletmajster_backend.Database.Repositories.Interfaces;
 using biletmajster_backend.Domain.DTOS;
+using biletmajster_backend.Domain.Errors;
+using biletmajster_backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace biletmajster_backend.Controllers
-{ 
+{
     /// <summary>
     /// 
     /// </summary>
     [ApiController]
     public class EventOrganizerApiController : ControllerBase
-    { 
+    {
+        private readonly ILogger<EventOrganizerApiController> _logger;
+        private readonly IOrganizersRepository _organizersRepository;
+        private readonly IConfirmationService _confirmationService;
+        private readonly IMapper _mapper;
+        private readonly IOrganizerIdentityManager _organizerIdentityManager;
+
+        public EventOrganizerApiController(ILogger<EventOrganizerApiController> logger,
+            IOrganizersRepository organizersRepository, IConfirmationService confirmationService, IMapper mapper,
+            IOrganizerIdentityManager organizerIdentityManager)
+        {
+            _logger = logger;
+            _organizersRepository = organizersRepository;
+            _confirmationService = confirmationService;
+            _mapper = mapper;
+            _organizerIdentityManager = organizerIdentityManager;
+        }
+
         /// <summary>
         /// Confirm orginizer account
         /// </summary>
@@ -35,21 +58,31 @@ namespace biletmajster_backend.Controllers
         [Route("/api/v3/organizer/{id}")]
         [ValidateModelState]
         [SwaggerOperation("Confirm")]
-        [SwaggerResponse(statusCode: 201, type: typeof(Organizer), description: "account confirmed")]
-        public virtual IActionResult Confirm([FromRoute][Required]string id, [FromQuery][Required()]string code)
-        { 
-            //TODO: Uncomment the next line to return response 201 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(201, default(Organizer));
+        [SwaggerResponse(statusCode: 201, type: typeof(OrganizerDTO), description: "account confirmed")]
+        public virtual async Task<IActionResult> Confirm([FromRoute] [Required] long id,
+            [FromQuery] [Required] string code)
+        {
+            var organizer = await _organizersRepository.GetOrganizerByIdAsync(id);
+            if (organizer == null)
+            {
+                return NotFound(new ErrorResponse { Message = "Organizer not found" });
+            }
 
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400);
-            string exampleJson = null;
-            exampleJson = "{\n  \"password\" : \"12345\",\n  \"name\" : \"theUser\",\n  \"id\" : 10,\n  \"email\" : \"john@email.com\",\n  \"events\" : [ {\n    \"latitude\" : \"40.4775315\",\n    \"freePlace\" : 2,\n    \"title\" : \"Short description of Event\",\n    \"placeSchema\" : \"Seralized place schema\",\n    \"places\" : [ {\n      \"id\" : 21,\n      \"free\" : true\n    }, {\n      \"id\" : 21,\n      \"free\" : true\n    } ],\n    \"name\" : \"Long description of Event\",\n    \"startTime\" : 1673034164,\n    \"id\" : 10,\n    \"endTime\" : 1683034164,\n    \"categories\" : [ {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    }, {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    } ],\n    \"longitude\" : \"-3.7051359\",\n    \"status\" : \"done\",\n    \"maxPlace\" : 100\n  }, {\n    \"latitude\" : \"40.4775315\",\n    \"freePlace\" : 2,\n    \"title\" : \"Short description of Event\",\n    \"placeSchema\" : \"Seralized place schema\",\n    \"places\" : [ {\n      \"id\" : 21,\n      \"free\" : true\n    }, {\n      \"id\" : 21,\n      \"free\" : true\n    } ],\n    \"name\" : \"Long description of Event\",\n    \"startTime\" : 1673034164,\n    \"id\" : 10,\n    \"endTime\" : 1683034164,\n    \"categories\" : [ {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    }, {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    } ],\n    \"longitude\" : \"-3.7051359\",\n    \"status\" : \"done\",\n    \"maxPlace\" : 100\n  } ],\n  \"status\" : \"pending\"\n}";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<Organizer>(exampleJson)
-                        : default(Organizer);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            if (organizer.Status != OrganizerAccountStatus.PendingForConfirmation)
+            {
+                return BadRequest(new ErrorResponse { Message = "Organizer account is not pending for confirmation" });
+            }
+
+            var expectedCode = await _confirmationService.GetConfirmationCodeAsync(organizer);
+
+            if (expectedCode != code)
+            {
+                return BadRequest(new ErrorResponse { Message = "Confirmation code is wrong" });
+            }
+
+            await _organizersRepository.UpdateOrganizerAccountStatusAsync(organizer, OrganizerAccountStatus.Confirmed);
+
+            return Ok(_mapper.Map<OrganizerDTO>(organizer));
         }
 
         /// <summary>
@@ -63,15 +96,17 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("DeleteOrganizer")]
-        public virtual IActionResult DeleteOrganizer([FromRoute][Required]string id)
-        { 
-            //TODO: Uncomment the next line to return response 204 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(204);
+        public virtual async Task<IActionResult> DeleteOrganizer([FromRoute] [Required] long id)
+        {
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if (email == null)
+            {
+                return BadRequest(new ErrorResponse { Message = "Invalid session" });
+            }
 
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
-
-            throw new NotImplementedException();
+            await _organizersRepository.DeleteOrganizerByIdAsync(id);
+            return Ok();
         }
 
         /// <summary>
@@ -84,21 +119,19 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("GetOrganizer")]
-        [SwaggerResponse(statusCode: 200, type: typeof(Organizer), description: "successful operation")]
-        public virtual IActionResult GetOrganizer()
-        { 
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(Organizer));
+        [SwaggerResponse(statusCode: 200, type: typeof(OrganizerDTO), description: "successful operation")]
+        public virtual async Task<IActionResult> GetOrganizer()
+        {
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400);
-            string exampleJson = null;
-            exampleJson = "{\n  \"password\" : \"12345\",\n  \"name\" : \"theUser\",\n  \"id\" : 10,\n  \"email\" : \"john@email.com\",\n  \"events\" : [ {\n    \"latitude\" : \"40.4775315\",\n    \"freePlace\" : 2,\n    \"title\" : \"Short description of Event\",\n    \"placeSchema\" : \"Seralized place schema\",\n    \"places\" : [ {\n      \"id\" : 21,\n      \"free\" : true\n    }, {\n      \"id\" : 21,\n      \"free\" : true\n    } ],\n    \"name\" : \"Long description of Event\",\n    \"startTime\" : 1673034164,\n    \"id\" : 10,\n    \"endTime\" : 1683034164,\n    \"categories\" : [ {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    }, {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    } ],\n    \"longitude\" : \"-3.7051359\",\n    \"status\" : \"done\",\n    \"maxPlace\" : 100\n  }, {\n    \"latitude\" : \"40.4775315\",\n    \"freePlace\" : 2,\n    \"title\" : \"Short description of Event\",\n    \"placeSchema\" : \"Seralized place schema\",\n    \"places\" : [ {\n      \"id\" : 21,\n      \"free\" : true\n    }, {\n      \"id\" : 21,\n      \"free\" : true\n    } ],\n    \"name\" : \"Long description of Event\",\n    \"startTime\" : 1673034164,\n    \"id\" : 10,\n    \"endTime\" : 1683034164,\n    \"categories\" : [ {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    }, {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    } ],\n    \"longitude\" : \"-3.7051359\",\n    \"status\" : \"done\",\n    \"maxPlace\" : 100\n  } ],\n  \"status\" : \"pending\"\n}";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<Organizer>(exampleJson)
-                        : default(Organizer);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            if (email == null)
+            {
+                return BadRequest(new ErrorResponse { Message = "Invalid session" });
+            }
+
+            var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
+
+            return Ok(_mapper.Map<OrganizerDTO>(organizer));
         }
 
         /// <summary>
@@ -113,20 +146,19 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("LoginOrganizer")]
         [SwaggerResponse(statusCode: 200, type: typeof(InlineResponse200), description: "successful operation")]
-        public virtual IActionResult LoginOrganizer([FromQuery][Required()]string email, [FromQuery][Required()]string password)
-        { 
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(InlineResponse200));
+        public virtual async Task<IActionResult> LoginOrganizer([FromQuery] [Required] string email,
+            [FromQuery] [Required] string password)
+        {
+            try
+            {
+                var token = await _organizerIdentityManager.LoginAsync(email, password);
 
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400);
-            string exampleJson = null;
-            exampleJson = "{\n  \"sessionToken\" : \"sessionToken\"\n}";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<InlineResponse200>(exampleJson)
-                        : default(InlineResponse200);            //TODO: Change the data returned
-            return new ObjectResult(example);
+                return Ok(new InlineResponse200 { SessionToken = token });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new ErrorResponse { Message = e.Message });
+            }
         }
 
         /// <summary>
@@ -141,8 +173,8 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchOrganizer")]
-        public virtual IActionResult PatchOrganizer([FromRoute][Required]string id, [FromBody]Organizer body)
-        { 
+        public virtual IActionResult PatchOrganizer([FromRoute] [Required] string id, [FromBody] OrganizerDTO body)
+        {
             //TODO: Uncomment the next line to return response 202 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(202);
 
@@ -164,21 +196,37 @@ namespace biletmajster_backend.Controllers
         [Route("/api/v3/organizer")]
         [ValidateModelState]
         [SwaggerOperation("SignUp")]
-        [SwaggerResponse(statusCode: 201, type: typeof(Organizer), description: "successful operation")]
-        public virtual IActionResult SignUp([FromQuery][Required()]string name, [FromQuery][Required()]string email, [FromQuery][Required()]string password)
-        { 
-            //TODO: Uncomment the next line to return response 201 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(201, default(Organizer));
+        [SwaggerResponse(statusCode: 201, type: typeof(OrganizerDTO), description: "successful operation")]
+        public virtual async Task<IActionResult> SignUp([FromQuery] [Required] string name,
+            [FromQuery] [Required] string email, [FromQuery] [Required] string password)
+        {
+            // check if organizer already exist
+            var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
 
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400);
-            string exampleJson = null;
-            exampleJson = "{\n  \"password\" : \"12345\",\n  \"name\" : \"theUser\",\n  \"id\" : 10,\n  \"email\" : \"john@email.com\",\n  \"events\" : [ {\n    \"latitude\" : \"40.4775315\",\n    \"freePlace\" : 2,\n    \"title\" : \"Short description of Event\",\n    \"placeSchema\" : \"Seralized place schema\",\n    \"places\" : [ {\n      \"id\" : 21,\n      \"free\" : true\n    }, {\n      \"id\" : 21,\n      \"free\" : true\n    } ],\n    \"name\" : \"Long description of Event\",\n    \"startTime\" : 1673034164,\n    \"id\" : 10,\n    \"endTime\" : 1683034164,\n    \"categories\" : [ {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    }, {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    } ],\n    \"longitude\" : \"-3.7051359\",\n    \"status\" : \"done\",\n    \"maxPlace\" : 100\n  }, {\n    \"latitude\" : \"40.4775315\",\n    \"freePlace\" : 2,\n    \"title\" : \"Short description of Event\",\n    \"placeSchema\" : \"Seralized place schema\",\n    \"places\" : [ {\n      \"id\" : 21,\n      \"free\" : true\n    }, {\n      \"id\" : 21,\n      \"free\" : true\n    } ],\n    \"name\" : \"Long description of Event\",\n    \"startTime\" : 1673034164,\n    \"id\" : 10,\n    \"endTime\" : 1683034164,\n    \"categories\" : [ {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    }, {\n      \"name\" : \"Sport\",\n      \"id\" : 1\n    } ],\n    \"longitude\" : \"-3.7051359\",\n    \"status\" : \"done\",\n    \"maxPlace\" : 100\n  } ],\n  \"status\" : \"pending\"\n}";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<Organizer>(exampleJson)
-                        : default(Organizer);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            if (organizer != null)
+            {
+                return BadRequest(new ErrorResponse
+                {
+                    Message = "Organizer already exist"
+                });
+            }
+
+            // register organizer
+            var newOrganizer = await _organizerIdentityManager.RegisterOrganizerAsync(name, email, password);
+
+            // send email with confirmation code
+            await _confirmationService.SendConfirmationRequestAsync(newOrganizer);
+
+            // return organizer 
+            return Ok(new OrganizerDTO
+            {
+                Id = newOrganizer.Id,
+                Name = name,
+                Email = email,
+                Password = password,
+                Events = new List<ModelEventDTO>(),
+                Status = OrganizerDTO.StatusEnum.Pending
+            });
         }
     }
 }
