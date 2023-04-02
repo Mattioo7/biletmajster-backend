@@ -1,4 +1,4 @@
-﻿using biletmajster_backend.Database.Entities;
+using biletmajster_backend.Database.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -4,8 +4,8 @@ namespace biletmajster_backend.Database.Entities;
 
 public enum EventStatus
 {
-    [EnumMember(Value = "inFuture")] InFutureEnum = 0,
-    [EnumMember(Value = "pending")] PendingEnum = 1,
-    [EnumMember(Value = "done")] DoneEnum = 2,
-    [EnumMember(Value = "cancelled")] CancelledEnum = 3
+    [EnumMember(Value = "inFuture")] InFuture = 0,
+    [EnumMember(Value = "pending")] Pending = 1,
+    [EnumMember(Value = "done")] Done = 2,
+    [EnumMember(Value = "cancelled")] Cancelled = 3
 }

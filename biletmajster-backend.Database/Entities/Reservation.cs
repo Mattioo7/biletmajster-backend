@@ -8,7 +8,7 @@ public class Reservation
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long Id { get; set; }
-    public long EventId { get; set; }
-    public long PlaceId { get; set; }
+    public ModelEvent Event { get; set; }
+    public Place Place { get; set; }
     public string ReservationToken { get; set; }
 }
