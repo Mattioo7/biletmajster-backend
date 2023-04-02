@@ -13,30 +13,5 @@ namespace biletmajster_backend.Database
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-        
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Category>(entity =>
-            {
-                entity.HasKey(x => x.Id);
-            });
-
-            modelBuilder.Entity<ModelEvent>(entity =>
-            {
-                entity.HasKey(x => x.Id);
-            });
-
-            modelBuilder.Entity<Organizer>(entity =>
-            {
-                entity.HasKey(x => x.Id);
-            });
-
-            modelBuilder.Entity<Reservation>(entity =>
-            {
-                entity.HasKey(x => x.Id);
-            });
-        }
     }
 }

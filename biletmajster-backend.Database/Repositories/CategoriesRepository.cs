@@ -11,5 +11,28 @@ namespace biletmajster_backend.Database.Repositories
         }
 
         protected override DbSet<Category> DbSet => mDbContext.Categories;
+
+        public async Task<bool> AddCategory(Category category)
+        {
+            await DbSet.AddAsync(category);
+            return await this.SaveChanges();
+        }
+        public async Task<Category> GetCategoryById(int id)
+        {
+            return await  DbSet.FirstOrDefaultAsync(x => x.Id == id);
+        }
+        public async Task<Category> GetCategoryByName(string name)
+        {
+            return await DbSet.FirstOrDefaultAsync(x => x.Name == name);
+        }
+        public async Task<List<Category>> GetAllCategories()
+        {
+            return await DbSet.ToListAsync();
+        }
+        public async Task<bool> SaveChanges()
+        {
+            var saved = await mDbContext.SaveChangesAsync();
+            return saved > 0 ? true : false;
+        }
     }
 }
