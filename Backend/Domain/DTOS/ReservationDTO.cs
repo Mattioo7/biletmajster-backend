@@ -12,27 +12,34 @@ using System.Runtime.Serialization;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace biletmajster_backend.Domain.Models
+namespace biletmajster_backend.Domain.DTOS
 { 
     /// <summary>
     /// 
     /// </summary>
     [DataContract]
-    public partial class Category : IEquatable<Category>
+    public partial class ReservationDTO : IEquatable<ReservationDTO>
     { 
         /// <summary>
-        /// Gets or Sets Id
+        /// Gets or Sets EventId
         /// </summary>
 
-        [DataMember(Name="id")]
-        public long? Id { get; set; }
+        [DataMember(Name="eventId")]
+        public long? EventId { get; set; }
 
         /// <summary>
-        /// Gets or Sets Name
+        /// Gets or Sets PlaceId
         /// </summary>
 
-        [DataMember(Name="name")]
-        public string Name { get; set; }
+        [DataMember(Name="placeId")]
+        public long? PlaceId { get; set; }
+
+        /// <summary>
+        /// Gets or Sets ReservationToken
+        /// </summary>
+
+        [DataMember(Name="reservationToken")]
+        public string ReservationToken { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object
@@ -41,9 +48,10 @@ namespace biletmajster_backend.Domain.Models
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("class Category {\n");
-            sb.Append("  Id: ").Append(Id).Append("\n");
-            sb.Append("  Name: ").Append(Name).Append("\n");
+            sb.Append("class ReservationDTO {\n");
+            sb.Append("  EventId: ").Append(EventId).Append("\n");
+            sb.Append("  PlaceId: ").Append(PlaceId).Append("\n");
+            sb.Append("  ReservationToken: ").Append(ReservationToken).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -66,29 +74,34 @@ namespace biletmajster_backend.Domain.Models
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((Category)obj);
+            return obj.GetType() == GetType() && Equals((ReservationDTO)obj);
         }
 
         /// <summary>
-        /// Returns true if Category instances are equal
+        /// Returns true if ReservationDTO instances are equal
         /// </summary>
-        /// <param name="other">Instance of Category to be compared</param>
+        /// <param name="other">Instance of ReservationDTO to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals(Category other)
+        public bool Equals(ReservationDTO other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
 
             return 
                 (
-                    Id == other.Id ||
-                    Id != null &&
-                    Id.Equals(other.Id)
+                    EventId == other.EventId ||
+                    EventId != null &&
+                    EventId.Equals(other.EventId)
                 ) && 
                 (
-                    Name == other.Name ||
-                    Name != null &&
-                    Name.Equals(other.Name)
+                    PlaceId == other.PlaceId ||
+                    PlaceId != null &&
+                    PlaceId.Equals(other.PlaceId)
+                ) && 
+                (
+                    ReservationToken == other.ReservationToken ||
+                    ReservationToken != null &&
+                    ReservationToken.Equals(other.ReservationToken)
                 );
         }
 
@@ -102,10 +115,12 @@ namespace biletmajster_backend.Domain.Models
             {
                 var hashCode = 41;
                 // Suitable nullity checks etc, of course :)
-                    if (Id != null)
-                    hashCode = hashCode * 59 + Id.GetHashCode();
-                    if (Name != null)
-                    hashCode = hashCode * 59 + Name.GetHashCode();
+                    if (EventId != null)
+                    hashCode = hashCode * 59 + EventId.GetHashCode();
+                    if (PlaceId != null)
+                    hashCode = hashCode * 59 + PlaceId.GetHashCode();
+                    if (ReservationToken != null)
+                    hashCode = hashCode * 59 + ReservationToken.GetHashCode();
                 return hashCode;
             }
         }
@@ -113,12 +128,12 @@ namespace biletmajster_backend.Domain.Models
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(Category left, Category right)
+        public static bool operator ==(ReservationDTO left, ReservationDTO right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(Category left, Category right)
+        public static bool operator !=(ReservationDTO left, ReservationDTO right)
         {
             return !Equals(left, right);
         }

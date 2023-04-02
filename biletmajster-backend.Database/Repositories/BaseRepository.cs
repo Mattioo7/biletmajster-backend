@@ -11,7 +11,7 @@ namespace biletmajster_backend.Database.Repositories
     {
         protected ApplicationDbContext mDbContext;
         protected abstract DbSet<Entity> DbSet { get; }
-        //private DbSet<MessageEntity>
+        
         public BaseRepository(ApplicationDbContext dbContext)
         {
             this.mDbContext = dbContext;
