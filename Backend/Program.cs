@@ -31,14 +31,9 @@ builder.Services.AddSingleton(
 // Scoped
 builder.Services.AddScoped<MailService>();
 
-//Odkomentowa� i zmieni� ten usesql
+services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b=> b.MigrationsAssembly("biletmajster-backend")));
 
-//services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(configuration.GetConnectionString("DefaultLocal")));
-//services.AddIdentity<ApplicationUser, IdentityRole>(config =>
-//{
-//    config.SignIn.RequireConfirmedEmail = false;
-//}).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
-//services.AddScoped<IApplicationUserRepositories, ApplicationUserRepositories>();
+services.AddScoped<ICategoriesRepository, CategoriesRepository>();
 
 // Data Base Section:
 

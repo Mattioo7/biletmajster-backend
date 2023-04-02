@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace biletmajster_backend.Database.Repositories.Interfaces
 {
-    public interface IApplicationUserRepositories
+    public interface ICategoriesRepository
     {
     }
 }

@@ -12,13 +12,13 @@ using System.Runtime.Serialization;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace biletmajster_backend.Domain.Models
+namespace biletmajster_backend.Domain.DTOS
 { 
     /// <summary>
     /// 
     /// </summary>
     [DataContract]
-    public partial class Place : IEquatable<Place>
+    public partial class Category : IEquatable<Category>
     { 
         /// <summary>
         /// Gets or Sets Id
@@ -28,11 +28,11 @@ namespace biletmajster_backend.Domain.Models
         public long? Id { get; set; }
 
         /// <summary>
-        /// Gets or Sets Free
+        /// Gets or Sets Name
         /// </summary>
 
-        [DataMember(Name="free")]
-        public bool? Free { get; set; }
+        [DataMember(Name="name")]
+        public string Name { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object
@@ -41,9 +41,9 @@ namespace biletmajster_backend.Domain.Models
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("class Place {\n");
+            sb.Append("class Category {\n");
             sb.Append("  Id: ").Append(Id).Append("\n");
-            sb.Append("  Free: ").Append(Free).Append("\n");
+            sb.Append("  Name: ").Append(Name).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -66,15 +66,15 @@ namespace biletmajster_backend.Domain.Models
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((Place)obj);
+            return obj.GetType() == GetType() && Equals((Category)obj);
         }
 
         /// <summary>
-        /// Returns true if Place instances are equal
+        /// Returns true if Category instances are equal
         /// </summary>
-        /// <param name="other">Instance of Place to be compared</param>
+        /// <param name="other">Instance of Category to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals(Place other)
+        public bool Equals(Category other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -86,9 +86,9 @@ namespace biletmajster_backend.Domain.Models
                     Id.Equals(other.Id)
                 ) && 
                 (
-                    Free == other.Free ||
-                    Free != null &&
-                    Free.Equals(other.Free)
+                    Name == other.Name ||
+                    Name != null &&
+                    Name.Equals(other.Name)
                 );
         }
 
@@ -104,8 +104,8 @@ namespace biletmajster_backend.Domain.Models
                 // Suitable nullity checks etc, of course :)
                     if (Id != null)
                     hashCode = hashCode * 59 + Id.GetHashCode();
-                    if (Free != null)
-                    hashCode = hashCode * 59 + Free.GetHashCode();
+                    if (Name != null)
+                    hashCode = hashCode * 59 + Name.GetHashCode();
                 return hashCode;
             }
         }
@@ -113,12 +113,12 @@ namespace biletmajster_backend.Domain.Models
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(Place left, Place right)
+        public static bool operator ==(Category left, Category right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(Place left, Place right)
+        public static bool operator !=(Category left, Category right)
         {
             return !Equals(left, right);
         }

@@ -10,7 +10,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using biletmajster_backend.Attributes;
-using biletmajster_backend.Domain.Models;
+using biletmajster_backend.Domain.DTOS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
