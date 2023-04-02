@@ -9,7 +9,7 @@ namespace biletmajster_backend.Database.Repositories
         public CategoriesRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
         }
-
+        
         protected override DbSet<Category> DbSet => mDbContext.Categories;
 
         public async Task<bool> AddCategory(Category category)
@@ -32,7 +32,12 @@ namespace biletmajster_backend.Database.Repositories
         public async Task<bool> SaveChanges()
         {
             var saved = await mDbContext.SaveChangesAsync();
-            return saved > 0 ? true : false;
+            return saved > 0;
+        }
+        public async Task<bool> UpdateCategory(Category category)
+        {
+            DbSet.Update(category);
+            return await this.SaveChanges();
         }
     }
 }

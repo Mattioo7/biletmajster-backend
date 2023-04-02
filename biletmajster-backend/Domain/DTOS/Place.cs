@@ -74,6 +74,16 @@ namespace biletmajster_backend.Domain.DTOS
         /// </summary>
         /// <param name="other">Instance of Place to be compared</param>
         /// <returns>Boolean</returns>
+        /// 
+
+        [DataMember(Name = "SeatNumber")]
+        public long SeatNumber { get; set; }
+
+        public Place(long SeatNr)
+        {
+            SeatNumber = SeatNr;
+        }
+
         public bool Equals(Place other)
         {
             if (ReferenceEquals(null, other)) return false;

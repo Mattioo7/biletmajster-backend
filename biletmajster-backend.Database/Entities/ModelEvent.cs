@@ -17,8 +17,13 @@ public class ModelEvent
     public string Name { get; set; }
     public string PlaceSchema { get; set; }
     public EventStatus Status { get; set; }
-    public List<Category> Categories { get; set; }
+    public ICollection<Category> Categories { get; set; }
     public long FreePlace { get; set; }
     public long MaxPlace { get; set; }
-    public List<Place> Places { get; set; }
+    public ICollection<Place> Places { get; set; }
+    public ModelEvent()
+    {
+        this.Categories = new List<Category>();
+        this.Places = new List<Place>();
+    }
 }
