@@ -9,47 +9,66 @@
  */
 
 using System.ComponentModel.DataAnnotations;
+using AutoMapper;
 using biletmajster_backend.Attributes;
+using biletmajster_backend.Database.Repositories.Interfaces;
 using biletmajster_backend.Domain.DTOS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace biletmajster_backend.Controllers
-{ 
+{
     /// <summary>
     /// 
     /// </summary>
     [ApiController]
     public class CategoriesApiController : ControllerBase
-    { 
+    {
         /// <summary>
         /// Create new category
         /// </summary>
         /// <param name="categoryName">name of category</param>
         /// <response code="201">created</response>
         /// <response code="400">category already exist</response>
+        /// 
+        private readonly ICategoriesRepository _categoriesRepository;
+
+        private readonly IMapper _mapper;
+
+        public CategoriesApiController(ICategoriesRepository categoriesRepository, IMapper mapper)
+        {
+            _categoriesRepository = categoriesRepository;
+            _mapper = mapper;
+        }
+
         [HttpPost]
         [Route("/api/v3/categories")]
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("AddCategories")]
         [SwaggerResponse(statusCode: 201, type: typeof(Category), description: "created")]
-        public virtual IActionResult AddCategories([FromQuery][Required()]string categoryName)
-        { 
-            //TODO: Uncomment the next line to return response 201 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(201, default(Category));
+        public virtual async Task<IActionResult> AddCategories([FromQuery] [Required()] string categoryName)
+        {
+            var tmp = _mapper.Map<Database.Entities.Category>(new Category()
+            {
+                Name = categoryName
+            });
+            if (await _categoriesRepository.GetCategoryByName(categoryName) != null)
+            {
+                ModelState.Clear();
+                ModelState.AddModelError("", "Category already exists");
+                return StatusCode(422, ModelState);
+            }
 
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400);
-            string exampleJson = null;
-            exampleJson = "{\n  \"name\" : \"Sport\",\n  \"id\" : 1\n}";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<Category>(exampleJson)
-                        : default(Category);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            if (await _categoriesRepository.AddCategory(tmp))
+                return Ok("Successfully created");
+            else
+            {
+                ModelState.Clear();
+                ModelState.AddModelError("", "Something went wrong while savin");
+                return StatusCode(500, ModelState);
+            }
         }
 
         /// <summary>
@@ -61,17 +80,23 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetCategories")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<Category>), description: "successful operation")]
-        public virtual IActionResult GetCategories()
-        { 
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(List<Category>));
-            string exampleJson = null;
-            exampleJson = "[ {\n  \"name\" : \"Sport\",\n  \"id\" : 1\n}, {\n  \"name\" : \"Sport\",\n  \"id\" : 1\n} ]";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<List<Category>>(exampleJson)
-                        : default(List<Category>);            //TODO: Change the data returned
-            return new ObjectResult(example);
+        public virtual async Task<IActionResult> GetCategories()
+        {
+            var categories = await _categoriesRepository.GetAllCategories();
+            var resultList = new List<Domain.DTOS.Category>();
+            foreach (var category in categories)
+            {
+                resultList.Add(_mapper.Map<Category>(category));
+            }
+
+            if (resultList.Count == 0)
+            {
+                ModelState.Clear();
+                ModelState.AddModelError("", "No categories in DataBase");
+                return StatusCode(404, ModelState);
+            }
+
+            return new ObjectResult(resultList);
         }
     }
 }

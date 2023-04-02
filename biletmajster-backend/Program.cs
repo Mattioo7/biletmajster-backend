@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Configurations;
 using Backend.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var configuration = builder.Configuration;
@@ -31,14 +32,20 @@ builder.Services.AddSingleton(
 // Scoped
 builder.Services.AddScoped<MailService>();
 
-services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b=> b.MigrationsAssembly("biletmajster-backend")));
+//services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b=> b.MigrationsAssembly("biletmajster-backend")));
+services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(configuration.GetConnectionString("LocalApi"), builder =>
+{
+    builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+}));
 
 services.AddScoped<ICategoriesRepository, CategoriesRepository>();
+services.AddScoped<IModelEventRepository, ModelEventRepository>();
 
 // Data Base Section:
 
 
 builder.Services.AddControllers();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -59,6 +66,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.EnsureCreated();
+//}
 
 app.UseCors();
 app.UseAuthentication();

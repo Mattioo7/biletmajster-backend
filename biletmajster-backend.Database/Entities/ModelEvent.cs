@@ -1,8 +1,13 @@
 
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+
 namespace biletmajster_backend.Database.Entities;
 
 public class ModelEvent
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long Id { get; set; }
     public string Title { get; set; }
     public long StartTime { get; set; }
