@@ -11,13 +11,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using AutoMapper;
-using Backend.Interfaces;
+using biletmajster_backend.Interfaces;
 using biletmajster_backend.Attributes;
 using biletmajster_backend.Database.Entities;
 using biletmajster_backend.Database.Repositories.Interfaces;
 using biletmajster_backend.Domain.DTOS;
 using biletmajster_backend.Domain.Errors;
-using biletmajster_backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;

@@ -1,4 +1,4 @@
-using Backend.Interfaces;
+using biletmajster_backend.Interfaces;
 using biletmajster_backend.Database.Entities;
 using biletmajster_backend.Database.Repositories.Interfaces;
 

@@ -1,6 +1,6 @@
 using biletmajster_backend.Database.Entities;
 
-namespace Backend.Interfaces;
+namespace biletmajster_backend.Interfaces;
 
 public interface IConfirmationService
 {

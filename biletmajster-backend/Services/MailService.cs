@@ -1,10 +1,9 @@
 using MailKit.Net.Smtp;
-using MailKit;
 using MimeKit;
-using Backend.Interfaces;
-using Backend.Configurations;
+using biletmajster_backend.Interfaces;
+using biletmajster_backend.Configurations;
 
-namespace Backend.Services;
+namespace biletmajster_backend.Services;
 
 public class MailService : ICustomMailService
 {
