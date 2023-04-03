@@ -14,21 +14,28 @@ public class OrganizerIdentityManager : IOrganizerIdentityManager
 {
     private readonly IOrganizersRepository _organizersRepository;
     private readonly IConfiguration _configuration;
+    private readonly Logger<OrganizerIdentityManager> _logger;
 
-    public OrganizerIdentityManager(IOrganizersRepository organizersRepository, IConfiguration configuration)
+    public OrganizerIdentityManager(IOrganizersRepository organizersRepository, IConfiguration configuration,
+        Logger<OrganizerIdentityManager> logger)
     {
         _organizersRepository = organizersRepository;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<Organizer> RegisterOrganizerAsync(string name, string email, string password)
     {
+        _logger.LogDebug($"Registering organizer {name} with email {email}");
+        
         CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
         return await _organizersRepository.CreateOrganizerAsync(name, email, passwordHash, passwordSalt);
     }
 
     public async Task<string> LoginAsync(string email, string password)
     {
+        _logger.LogDebug($"Trying to login organizer with email {email}");
+        
         var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
 
         if (organizer == null)
