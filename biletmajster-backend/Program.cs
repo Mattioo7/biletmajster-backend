@@ -74,14 +74,14 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddCors(options =>
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.SetIsOriginAllowed(host => host.StartsWith(builder.Configuration["FrontendUrl"]!))
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    }));
+// builder.Services.AddCors(options =>
+//     options.AddDefaultPolicy(policy =>
+//     {
+//         policy.SetIsOriginAllowed(host => host.StartsWith(builder.Configuration["FrontendUrl"]!))
+//             .AllowAnyHeader()
+//             .AllowAnyMethod()
+//             .AllowCredentials();
+//     }));
 
 var app = builder.Build();
 
@@ -96,7 +96,7 @@ if (app.Environment.IsDevelopment())
 //    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.EnsureCreated();
 //}
 
-app.UseCors();
+// app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseHttpsRedirection();
