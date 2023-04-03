@@ -1,4 +1,4 @@
-namespace Backend.Interfaces;
+namespace biletmajster_backend.Interfaces;
 
 public interface ICustomMailService
 {

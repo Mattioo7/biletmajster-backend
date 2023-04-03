@@ -1,7 +1,5 @@
 ﻿using System.Text;
 using AutoMapper;
-using biletmajster_backend.Domain.DTOS;
-using biletmajster_backend.Database.Entities;
 
 namespace biletmajster_backend.Mapper
 {
