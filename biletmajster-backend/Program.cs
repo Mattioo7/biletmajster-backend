@@ -6,17 +6,11 @@ using biletmajster_backend.Database;
 using biletmajster_backend.Database.Repositories;
 using biletmajster_backend.Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-
-using Backend.Configurations;
-using Backend.Interfaces;
-using Backend.Services;
+using biletmajster_backend.Configurations;
 using biletmajster_backend.Interfaces;
 using biletmajster_backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-
-using Microsoft.EntityFrameworkCore.Query;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;

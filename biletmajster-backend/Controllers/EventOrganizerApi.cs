@@ -11,13 +11,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using AutoMapper;
-using Backend.Interfaces;
+using biletmajster_backend.Interfaces;
 using biletmajster_backend.Attributes;
 using biletmajster_backend.Database.Entities;
 using biletmajster_backend.Database.Repositories.Interfaces;
 using biletmajster_backend.Domain.DTOS;
 using biletmajster_backend.Domain.Errors;
-using biletmajster_backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -62,14 +61,18 @@ namespace biletmajster_backend.Controllers
         public virtual async Task<IActionResult> Confirm([FromRoute] [Required] long id,
             [FromQuery] [Required] string code)
         {
+            _logger.LogDebug($"Confirmation request from organizer with id: {id}, code: {code}");
+            
             var organizer = await _organizersRepository.GetOrganizerByIdAsync(id);
             if (organizer == null)
             {
+                _logger.LogDebug($"Cannot find organizer with id: {id}");
                 return NotFound(new ErrorResponse { Message = "Organizer not found" });
             }
 
             if (organizer.Status != OrganizerAccountStatus.PendingForConfirmation)
             {
+                _logger.LogDebug($"Invalid status of organizer with id: {id}, status: {organizer.Status.ToString()}");
                 return BadRequest(new ErrorResponse { Message = "Organizer account is not pending for confirmation" });
             }
 
@@ -77,6 +80,7 @@ namespace biletmajster_backend.Controllers
 
             if (expectedCode != code)
             {
+                _logger.LogDebug($"Invalid confirmation code for organizer with id: {id}");
                 return BadRequest(new ErrorResponse { Message = "Confirmation code is wrong" });
             }
 
@@ -98,6 +102,8 @@ namespace biletmajster_backend.Controllers
         [SwaggerOperation("DeleteOrganizer")]
         public virtual async Task<IActionResult> DeleteOrganizer([FromRoute] [Required] long id)
         {
+            _logger.LogDebug($"Delete organizer request with id: {id}");
+            
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
             if (email == null)
@@ -129,6 +135,8 @@ namespace biletmajster_backend.Controllers
                 return BadRequest(new ErrorResponse { Message = "Invalid session" });
             }
 
+            _logger.LogDebug($"Get organizer request with email: {email}");
+
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
 
             return Ok(_mapper.Map<OrganizerDTO>(organizer));
@@ -149,6 +157,8 @@ namespace biletmajster_backend.Controllers
         public virtual async Task<IActionResult> LoginOrganizer([FromQuery] [Required] string email,
             [FromQuery] [Required] string password)
         {
+            _logger.LogDebug($"Login organizer request with email: {email}");
+            
             try
             {
                 var token = await _organizerIdentityManager.LoginAsync(email, password);
@@ -157,6 +167,7 @@ namespace biletmajster_backend.Controllers
             }
             catch (Exception e)
             {
+                _logger.LogDebug($"Cannot login organizer with email: {email}, error: {e.Message}");
                 return BadRequest(new ErrorResponse { Message = e.Message });
             }
         }
@@ -200,11 +211,14 @@ namespace biletmajster_backend.Controllers
         public virtual async Task<IActionResult> SignUp([FromQuery] [Required] string name,
             [FromQuery] [Required] string email, [FromQuery] [Required] string password)
         {
+            _logger.LogDebug($"SignUp request with email: {email}, name: {name}");
+            
             // check if organizer already exist
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
 
             if (organizer != null)
             {
+                _logger.LogDebug($"Organizer with email: {email} already exist");
                 return BadRequest(new ErrorResponse
                 {
                     Message = "Organizer already exist"
