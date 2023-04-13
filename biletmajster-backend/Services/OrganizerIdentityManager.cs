@@ -15,10 +15,10 @@ public class OrganizerIdentityManager : IOrganizerIdentityManager
 
     private readonly IOrganizersRepository _organizersRepository;
     private readonly IConfiguration _configuration;
-    private readonly Logger<OrganizerIdentityManager> _logger;
+    private readonly ILogger<OrganizerIdentityManager> _logger;
 
     public OrganizerIdentityManager(IOrganizersRepository organizersRepository, IConfiguration configuration,
-        Logger<OrganizerIdentityManager> logger)
+        ILogger<OrganizerIdentityManager> logger)
     {
         _organizersRepository = organizersRepository;
         _configuration = configuration;
