@@ -22,7 +22,7 @@ jobs:
           dotnet-version: 7.x
       - name: Restore dependencies
         run: dotnet restore
-        working-directory: ./UnitTests
+        working-directory: biletmajster-backend.Tests
       - name: Execute unit tests
         run: dotnet test
-        working-directory: ./UnitTests
+        working-directory: biletmajster-backend.Tests
