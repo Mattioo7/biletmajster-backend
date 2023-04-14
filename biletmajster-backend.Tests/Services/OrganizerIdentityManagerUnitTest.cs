@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using AutoMapper;
 using biletmajster_backend.Database.Entities;
 using biletmajster_backend.Database.Repositories.Interfaces;
 using biletmajster_backend.Services;
@@ -39,9 +40,11 @@ public class OrganizerIdentityManagerUnitTest
                 });
 
         var loggerMock = new Mock<ILogger<OrganizerIdentityManager>>();
+        var mapperMock = new Mock<IMapper>();
 
         var organizerIdentityManager =
-            new OrganizerIdentityManager(organizersRepositoryMock.Object, configurationMock.Object, loggerMock.Object);
+            new OrganizerIdentityManager(organizersRepositoryMock.Object, configurationMock.Object, loggerMock.Object,
+                mapperMock.Object);
 
         // When
         await organizerIdentityManager.RegisterOrganizerAsync(name, email, password);
@@ -107,8 +110,11 @@ public class OrganizerIdentityManagerUnitTest
 
         var loggerMock = new Mock<ILogger<OrganizerIdentityManager>>();
 
+        var mapperMock = new Mock<IMapper>();
+
         var organizerIdentityManager =
-            new OrganizerIdentityManager(organizersRepositoryMock.Object, configurationMock.Object, loggerMock.Object);
+            new OrganizerIdentityManager(organizersRepositoryMock.Object, configurationMock.Object, loggerMock.Object,
+                mapperMock.Object);
 
 
         // When
@@ -152,8 +158,11 @@ public class OrganizerIdentityManagerUnitTest
 
         var loggerMock = new Mock<ILogger<OrganizerIdentityManager>>();
 
+        var mapperMock = new Mock<IMapper>();
+
         var organizerIdentityManager =
-            new OrganizerIdentityManager(organizersRepositoryMock.Object, configurationMock.Object, loggerMock.Object);
+            new OrganizerIdentityManager(organizersRepositoryMock.Object, configurationMock.Object, loggerMock.Object,
+                mapperMock.Object);
 
         // When
         await Assert.ThrowsAsync<Exception>(async () =>
@@ -207,8 +216,11 @@ public class OrganizerIdentityManagerUnitTest
 
         var loggerMock = new Mock<ILogger<OrganizerIdentityManager>>();
 
+        var mapperMock = new Mock<IMapper>();
+
         var organizerIdentityManager =
-            new OrganizerIdentityManager(organizersRepositoryMock.Object, configurationMock.Object, loggerMock.Object);
+            new OrganizerIdentityManager(organizersRepositoryMock.Object, configurationMock.Object, loggerMock.Object,
+                mapperMock.Object);
 
         // When
         await Assert.ThrowsAsync<Exception>(async () =>

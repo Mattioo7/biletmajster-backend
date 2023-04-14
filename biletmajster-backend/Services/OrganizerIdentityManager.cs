@@ -2,9 +2,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using AutoMapper;
 using biletmajster_backend.Interfaces;
 using biletmajster_backend.Database.Entities;
 using biletmajster_backend.Database.Repositories.Interfaces;
+using biletmajster_backend.Domain.DTOS;
 using Microsoft.IdentityModel.Tokens;
 
 namespace biletmajster_backend.Services;
@@ -16,13 +18,15 @@ public class OrganizerIdentityManager : IOrganizerIdentityManager
     private readonly IOrganizersRepository _organizersRepository;
     private readonly IConfiguration _configuration;
     private readonly ILogger<OrganizerIdentityManager> _logger;
+    private readonly IMapper _mapper;
 
     public OrganizerIdentityManager(IOrganizersRepository organizersRepository, IConfiguration configuration,
-        ILogger<OrganizerIdentityManager> logger)
+        ILogger<OrganizerIdentityManager> logger, IMapper mapper)
     {
         _organizersRepository = organizersRepository;
         _configuration = configuration;
         _logger = logger;
+        _mapper = mapper;
     }
 
     public async Task<Organizer> RegisterOrganizerAsync(string name, string email, string password)
@@ -31,6 +35,25 @@ public class OrganizerIdentityManager : IOrganizerIdentityManager
 
         CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
         return await _organizersRepository.CreateOrganizerAsync(name, email, passwordHash, passwordSalt);
+    }
+
+    public async Task<Organizer> PatchOrganizerAsync(OrganizerDTO newOrganizer)
+    {
+        _logger.LogDebug($"Patching organizer {newOrganizer.Name} with email {newOrganizer.Email}");
+        
+        CreatePasswordHash(newOrganizer.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+        var organizerToUpdate = new Organizer
+        {
+            Id = newOrganizer.Id.Value,
+            Name = newOrganizer.Name,
+            Email = newOrganizer.Email,
+            PasswordHash = passwordHash,
+            PasswordSalt = passwordSalt,
+            Events = newOrganizer.Events.Select(e => _mapper.Map<ModelEvent>(e)).ToList()
+        };
+        
+        return _organizersRepository.UpdateOrganizer(organizerToUpdate);
     }
 
     public async Task<string> LoginAsync(string email, string password)
