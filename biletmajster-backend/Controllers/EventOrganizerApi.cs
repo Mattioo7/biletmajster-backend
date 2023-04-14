@@ -62,7 +62,7 @@ namespace biletmajster_backend.Controllers
             [FromQuery] [Required] string code)
         {
             _logger.LogDebug($"Confirmation request from organizer with id: {id}, code: {code}");
-            
+
             var organizer = await _organizersRepository.GetOrganizerByIdAsync(id);
             if (organizer == null)
             {
@@ -103,12 +103,24 @@ namespace biletmajster_backend.Controllers
         public virtual async Task<IActionResult> DeleteOrganizer([FromRoute] [Required] long id)
         {
             _logger.LogDebug($"Delete organizer request with id: {id}");
-            
+
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+
             if (email == null)
             {
                 return BadRequest(new ErrorResponse { Message = "Invalid session" });
+            }
+
+            // check if organizer wants to delete himself
+            var originOrganizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
+            if (originOrganizer == null)
+            {
+                return NotFound(new ErrorResponse { Message = "Organizer not found" });
+            }
+
+            if (originOrganizer.Id != id)
+            {
+                return BadRequest(new ErrorResponse { Message = "You cannot delete other organizer" });
             }
 
             await _organizersRepository.DeleteOrganizerByIdAsync(id);
@@ -158,7 +170,7 @@ namespace biletmajster_backend.Controllers
             [FromQuery] [Required] string password)
         {
             _logger.LogDebug($"Login organizer request with email: {email}");
-            
+
             try
             {
                 var token = await _organizerIdentityManager.LoginAsync(email, password);
@@ -212,7 +224,7 @@ namespace biletmajster_backend.Controllers
             [FromQuery] [Required] string email, [FromQuery] [Required] string password)
         {
             _logger.LogDebug($"SignUp request with email: {email}, name: {name}");
-            
+
             // check if organizer already exist
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
 
