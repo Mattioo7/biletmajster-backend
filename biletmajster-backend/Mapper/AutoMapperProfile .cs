@@ -1,5 +1,4 @@
-﻿using System.Text;
-using AutoMapper;
+﻿using AutoMapper;
 using biletmajster_backend.Database.Entities;
 using biletmajster_backend.Domain.DTOS;
 
@@ -7,6 +6,7 @@ namespace biletmajster_backend.Mapper
 {
     public class AutoMapperProfile : Profile
     {
+        // TODO: Inject repositories
         public AutoMapperProfile()
         {
             CreateMap<Domain.DTOS.ModelEventDTO, Database.Entities.ModelEvent>();
@@ -16,6 +16,14 @@ namespace biletmajster_backend.Mapper
             CreateMap<Database.Entities.Category, Domain.DTOS.CategoryDTO>();
             CreateMap<Database.Entities.Organizer, Domain.DTOS.OrganizerDTO>();
             CreateMap<Domain.DTOS.OrganizerDTO, Database.Entities.Organizer>();
+            
+            // TODO: Add mapping using repository
+            CreateMap<Domain.DTOS.ReservationDTO, Database.Entities.Reservation>();
+            CreateMap<Database.Entities.Reservation, Domain.DTOS.ReservationDTO>()
+                .ForMember(destination => destination.EventId,
+                    m => m.MapFrom(source => source.Event.Id))
+                .ForMember(destination => destination.PlaceId,
+                    m => m.MapFrom(source => source.Place.Id));
 
             CreateMap<Domain.DTOS.PlaceDTO, Database.Entities.Place>();
             CreateMap<Database.Entities.Place, Domain.DTOS.PlaceDTO>();

@@ -62,6 +62,9 @@ services.AddScoped<IOrganizersRepository, OrganizersRepository>();
 services.AddScoped<IConfirmationService, ConfirmationService>();
 services.AddScoped<IOrganizerIdentityManager, OrganizerIdentityManager>();
 services.AddScoped<IPlaceRepository, PlaceRepository>();
+services.AddScoped<IPlaceRepository,PlaceRepository>();
+services.AddScoped<IReservationRepository,ReservationRepository>();
+services.AddScoped<IReservationService,ReservationService>();
 
 // Data Base Section:
 
