@@ -6,6 +6,7 @@ namespace biletmajster_backend.Database.Repositories.Interfaces
     {
         public Task<bool> AddPlaceAsync(Place place);
         public Task<bool> RemovePlaceAsync(Place place);
+        public Task<Place?> GetPlaceByIdAsync(long id);
         public Task<bool> SaveChangesAsync();
     }
 }
