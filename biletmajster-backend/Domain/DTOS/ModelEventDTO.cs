@@ -83,14 +83,14 @@ namespace biletmajster_backend.Domain.DTOS
         /// </summary>
 
         [DataMember(Name="status")]
-        public EventStatus Status { get; set; }
+        public EventStatusDTO Status { get; set; }
 
         /// <summary>
         /// Gets or Sets Categories
         /// </summary>
 
         [DataMember(Name="categories")]
-        public List<Category> Categories { get; set; }
+        public List<CategoryDTO> Categories { get; set; }
 
         /// <summary>
         /// Gets or Sets FreePlace
@@ -111,7 +111,7 @@ namespace biletmajster_backend.Domain.DTOS
         /// </summary>
 
         [DataMember(Name="places")]
-        public List<Place> Places { get; set; }
+        public List<PlaceDTO> Places { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object

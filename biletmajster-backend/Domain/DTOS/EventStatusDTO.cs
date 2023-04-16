@@ -18,7 +18,7 @@ namespace biletmajster_backend.Domain.DTOS
         /// </summary>
         /// <value>event status</value>
         [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public enum EventStatus
+        public enum EventStatusDTO
         {
             /// <summary>
             /// Enum InFutureEnum for inFuture

@@ -9,9 +9,13 @@
  */
 
 using System.ComponentModel.DataAnnotations;
+using AutoMapper;
 using biletmajster_backend.Attributes;
+using biletmajster_backend.Database.Entities;
+using biletmajster_backend.Database.Repositories.Interfaces;
 using biletmajster_backend.Domain.DTOS;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
@@ -23,7 +27,7 @@ namespace biletmajster_backend.Controllers
     /// </summary>
     [ApiController]
     public class EventApiController : ControllerBase
-    { 
+    {
         /// <summary>
         /// Add new event
         /// </summary>
@@ -38,26 +42,89 @@ namespace biletmajster_backend.Controllers
         /// <param name="placeSchema">seralized place schema</param>
         /// <response code="201">event created</response>
         /// <response code="400">event can not be created</response>
+        /// 
+
+        private readonly IMapper _mapper;
+        private readonly IModelEventRepository _modelEventRepository;
+        private readonly ICategoriesRepository _categoriesRepository;
+        private readonly IPlaceRepository _placeRepository;
+
+        public EventApiController(IMapper mapper, IModelEventRepository modelEventRepository, ICategoriesRepository categoriesRepository,
+            IPlaceRepository placeRepository)
+        {
+            _mapper = mapper;
+            _modelEventRepository = modelEventRepository;
+            _categoriesRepository = categoriesRepository;
+            _placeRepository = placeRepository;
+        }
+
         [HttpPost]
         [Route("/api/v3/events")]
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("AddEvent")]
-        [SwaggerResponse(statusCode: 201, type: typeof(ModelEventDTO), description: "event created")]
-        public virtual IActionResult AddEvent([FromQuery][Required()]string title, [FromQuery][Required()]string name, [FromQuery][Required()]int? freePlace, [FromQuery][Required()]int? startTime, [FromQuery][Required()]int? endTime, [FromQuery][Required()]string latitude, [FromQuery][Required()]string longitude, [FromQuery][Required()]List<int?> categories, [FromQuery]string placeSchema)
-        { 
-            //TODO: Uncomment the next line to return response 201 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(201, default(ModelEventDTO));
+        [SwaggerResponse(statusCode: 201, type: typeof(ModelEvent), description: "event created")]
+        public virtual async Task<IActionResult> AddEvent([FromQuery][Required()]string title, [FromQuery][Required()]string name, 
+            [FromQuery][Required()]int? freePlace, [FromQuery][Required()]int? startTime, [FromQuery][Required()]int? endTime, 
+            [FromQuery][Required()]string latitude,[FromQuery][Required()]string longitude, [FromQuery][Required()]List<int?> categories,
+            [FromQuery]string placeSchema)
+        {
+            //Event Model:
+            ModelEventDTO modelEvent = new ModelEventDTO()
+            {
+                Title = title,
+                Name = name,
+                FreePlace = freePlace,
+                StartTime = startTime,
+                EndTime = endTime,
+                Latitude = latitude,
+                Longitude = longitude,
+                PlaceSchema = placeSchema
+            };
+            var databaseEvent = _mapper.Map<ModelEvent>(modelEvent);
 
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400);
-            string exampleJson = null;
-            exampleJson = "{\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<ModelEventDTO>(exampleJson)
-                        : default(ModelEventDTO);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            // Places List: (Database)
+            // Handling Places
+            List<Database.Entities.Place> places = new List<Database.Entities.Place>();
+            for (int i = 0; i < freePlace; i++)
+            {
+                var place = new Database.Entities.Place()
+                {
+                    Free = true,
+                    SeatNumber = i+1,
+                    Event = databaseEvent
+                };
+                places.Add(place);
+            }
+
+            // Category List:
+            // Handling Categories
+            List<Database.Entities.Category> categoriesList = new List<Database.Entities.Category>();
+            foreach(var id in categories)
+            {
+                var category = await _categoriesRepository.GetCategoryById((int)id);
+                if (id==null || category == null)
+                {
+                    ModelState.Clear();
+                    ModelState.AddModelError("", $"Can 't find category with id: {id}");
+                    return BadRequest(ModelState);
+                }
+                categoriesList.Add(category);
+                category.Events.Add(databaseEvent);
+            }
+            databaseEvent.Categories = categoriesList;
+            databaseEvent.Places = places;
+
+            if (await _modelEventRepository.AddEvent(databaseEvent))
+            {
+                return Ok("Successfully created");
+            }
+            else
+            {
+                ModelState.Clear();
+                ModelState.AddModelError("", "Something went wrong while savin");
+                return StatusCode(500, ModelState);
+            }
         }
 
         /// <summary>
@@ -92,11 +159,11 @@ namespace biletmajster_backend.Controllers
         [Route("/api/v3/events/getByCategory")]
         [ValidateModelState]
         [SwaggerOperation("GetByCategory")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEvent>), description: "successful operation")]
         public virtual IActionResult GetByCategory([FromQuery][Required()]long? categoryId)
         { 
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(List<ModelEventDTO>));
+            // return StatusCode(200, default(List<ModelEvent>));
 
             //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(400);
@@ -104,8 +171,8 @@ namespace biletmajster_backend.Controllers
             exampleJson = "[ {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}, {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n} ]";
             
                         var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<List<ModelEventDTO>>(exampleJson)
-                        : default(List<ModelEventDTO>);            //TODO: Change the data returned
+                        ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
+                        : default(List<ModelEvent>);            //TODO: Change the data returned
             return new ObjectResult(example);
         }
 
@@ -121,11 +188,11 @@ namespace biletmajster_backend.Controllers
         [Route("/api/v3/events/{id}")]
         [ValidateModelState]
         [SwaggerOperation("GetEventById")]
-        [SwaggerResponse(statusCode: 200, type: typeof(ModelEventDTO), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(ModelEvent), description: "successful operation")]
         public virtual IActionResult GetEventById([FromRoute][Required]long? id)
         { 
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(ModelEventDTO));
+            // return StatusCode(200, default(ModelEvent));
 
             //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(400);
@@ -136,8 +203,8 @@ namespace biletmajster_backend.Controllers
             exampleJson = "{\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}";
             
                         var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<ModelEventDTO>(exampleJson)
-                        : default(ModelEventDTO);            //TODO: Change the data returned
+                        ? JsonConvert.DeserializeObject<ModelEvent>(exampleJson)
+                        : default(ModelEvent);            //TODO: Change the data returned
             return new ObjectResult(example);
         }
 
@@ -149,17 +216,17 @@ namespace biletmajster_backend.Controllers
         [Route("/api/v3/events")]
         [ValidateModelState]
         [SwaggerOperation("GetEvents")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEvent>), description: "successful operation")]
         public virtual IActionResult GetEvents()
         { 
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(List<ModelEventDTO>));
+            // return StatusCode(200, default(List<ModelEvent>));
             string exampleJson = null;
             exampleJson = "[ {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}, {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n} ]";
             
                         var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<List<ModelEventDTO>>(exampleJson)
-                        : default(List<ModelEventDTO>);            //TODO: Change the data returned
+                        ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
+                        : default(List<ModelEvent>);            //TODO: Change the data returned
             return new ObjectResult(example);
         }
 
@@ -172,17 +239,17 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("GetMyEvents")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEvent>), description: "successful operation")]
         public virtual IActionResult GetMyEvents()
         { 
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(List<ModelEventDTO>));
+            // return StatusCode(200, default(List<ModelEvent>));
             string exampleJson = null;
             exampleJson = "[ {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}, {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n} ]";
             
                         var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<List<ModelEventDTO>>(exampleJson)
-                        : default(List<ModelEventDTO>);            //TODO: Change the data returned
+                        ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
+                        : default(List<ModelEvent>);            //TODO: Change the data returned
             return new ObjectResult(example);
         }
 
@@ -198,7 +265,7 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchEvent")]
-        public virtual IActionResult PatchEvent([FromRoute][Required]string id, [FromBody]ModelEventDTO body)
+        public virtual IActionResult PatchEvent([FromRoute][Required]string id, [FromBody]ModelEvent body)
         { 
             //TODO: Uncomment the next line to return response 202 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(202);

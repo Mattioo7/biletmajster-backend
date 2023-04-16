@@ -47,10 +47,10 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("AddCategories")]
-        [SwaggerResponse(statusCode: 201, type: typeof(Category), description: "created")]
+        [SwaggerResponse(statusCode: 201, type: typeof(CategoryDTO), description: "created")]
         public virtual async Task<IActionResult> AddCategories([FromQuery] [Required()] string categoryName)
         {
-            var tmp = _mapper.Map<Database.Entities.Category>(new Category()
+            var tmp = _mapper.Map<Database.Entities.Category>(new CategoryDTO()
             {
                 Name = categoryName
             });
@@ -79,14 +79,14 @@ namespace biletmajster_backend.Controllers
         [Route("/api/v3/categories")]
         [ValidateModelState]
         [SwaggerOperation("GetCategories")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<Category>), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<CategoryDTO>), description: "successful operation")]
         public virtual async Task<IActionResult> GetCategories()
         {
             var categories = await _categoriesRepository.GetAllCategories();
-            var resultList = new List<Domain.DTOS.Category>();
+            var resultList = new List<Domain.DTOS.CategoryDTO>();
             foreach (var category in categories)
             {
-                resultList.Add(_mapper.Map<Category>(category));
+                resultList.Add(_mapper.Map<CategoryDTO>(category));
             }
 
             if (resultList.Count == 0)
