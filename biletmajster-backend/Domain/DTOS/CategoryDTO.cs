@@ -18,7 +18,7 @@ namespace biletmajster_backend.Domain.DTOS
     /// 
     /// </summary>
     [DataContract]
-    public partial class Category : IEquatable<Category>
+    public partial class CategoryDTO : IEquatable<CategoryDTO>
     { 
         /// <summary>
         /// Gets or Sets Id
@@ -66,7 +66,7 @@ namespace biletmajster_backend.Domain.DTOS
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((Category)obj);
+            return obj.GetType() == GetType() && Equals((CategoryDTO)obj);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace biletmajster_backend.Domain.DTOS
         /// </summary>
         /// <param name="other">Instance of Category to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals(Category other)
+        public bool Equals(CategoryDTO other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -113,12 +113,12 @@ namespace biletmajster_backend.Domain.DTOS
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(Category left, Category right)
+        public static bool operator ==(CategoryDTO left, CategoryDTO right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(Category left, Category right)
+        public static bool operator !=(CategoryDTO left, CategoryDTO right)
         {
             return !Equals(left, right);
         }

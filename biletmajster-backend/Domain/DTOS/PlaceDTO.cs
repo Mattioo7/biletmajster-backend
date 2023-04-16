@@ -18,7 +18,7 @@ namespace biletmajster_backend.Domain.DTOS
     /// 
     /// </summary>
     [DataContract]
-    public partial class Place : IEquatable<Place>
+    public partial class PlaceDTO : IEquatable<PlaceDTO>
     { 
         /// <summary>
         /// Gets or Sets Id
@@ -66,7 +66,7 @@ namespace biletmajster_backend.Domain.DTOS
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((Place)obj);
+            return obj.GetType() == GetType() && Equals((PlaceDTO)obj);
         }
 
         /// <summary>
@@ -79,12 +79,12 @@ namespace biletmajster_backend.Domain.DTOS
         [DataMember(Name = "SeatNumber")]
         public long SeatNumber { get; set; }
 
-        public Place(long SeatNr)
+        public PlaceDTO(long SeatNr)
         {
             SeatNumber = SeatNr;
         }
 
-        public bool Equals(Place other)
+        public bool Equals(PlaceDTO other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -123,12 +123,12 @@ namespace biletmajster_backend.Domain.DTOS
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(Place left, Place right)
+        public static bool operator ==(PlaceDTO left, PlaceDTO right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(Place left, Place right)
+        public static bool operator !=(PlaceDTO left, PlaceDTO right)
         {
             return !Equals(left, right);
         }
