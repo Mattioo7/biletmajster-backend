@@ -11,9 +11,9 @@ public class MailService : ICustomMailService
     private int port;
     private bool useSsl;
     
-    private readonly Logger<MailService> _logger;
+    private readonly ILogger<MailService> _logger;
 
-    public MailService(MailConfiguration config, Logger<MailService> logger)
+    public MailService(MailConfiguration config, ILogger<MailService> logger)
     {
         cfg = config;
         port = int.Parse(cfg.Port);
