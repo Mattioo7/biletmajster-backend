@@ -8,6 +8,7 @@ using biletmajster_backend.Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using biletmajster_backend.Configurations;
 using biletmajster_backend.Interfaces;
+using biletmajster_backend.Jwt;
 using biletmajster_backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -31,6 +32,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = configuration["Jwt:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Token"]))
         };
+        
+        // for mapping custom sessionToken to Bearer token
+        options.Events = JwtAuthEventsHandler.Instance;
     });
 
 services.AddLogging();
