@@ -196,15 +196,32 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchOrganizer")]
-        public virtual IActionResult PatchOrganizer([FromRoute] [Required] string id, [FromBody] OrganizerDTO body)
+        public virtual async Task<IActionResult> PatchOrganizer([FromRoute] [Required] long id, [FromBody] OrganizerDTO body)
         {
-            //TODO: Uncomment the next line to return response 202 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(202);
+            _logger.LogDebug($"Patch organizer request with id: {id}");
+            
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
+            if (email == null)
+            {
+                return BadRequest(new ErrorResponse { Message = "Invalid session" });
+            }
 
-            throw new NotImplementedException();
+            var originOrganizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
+            
+            if (originOrganizer == null)
+            {
+                return BadRequest(new ErrorResponse { Message = "Invalid session" });
+            }
+            
+            if (originOrganizer.Id != id)
+            {
+                return BadRequest(new ErrorResponse { Message = "You cannot patch other organizer" });
+            }
+
+            await _organizerIdentityManager.PatchOrganizerAsync(body);
+
+            return Ok();
         }
 
         /// <summary>

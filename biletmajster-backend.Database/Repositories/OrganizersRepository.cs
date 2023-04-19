@@ -5,10 +5,10 @@ using Microsoft.Extensions.Configuration;
 
 namespace biletmajster_backend.Database.Repositories;
 
-public class OrganizersRepository :  BaseRepository<Organizer>, IOrganizersRepository
+public class OrganizersRepository : BaseRepository<Organizer>, IOrganizersRepository
 {
     private readonly IConfiguration _configuration;
-    
+
     public OrganizersRepository(ApplicationDbContext dbContext, IConfiguration configuration) : base(dbContext)
     {
         _configuration = configuration;
@@ -60,7 +60,7 @@ public class OrganizersRepository :  BaseRepository<Organizer>, IOrganizersRepos
     public async Task DeleteOrganizerByIdAsync(long id)
     {
         var organizer = await DbSet.FindAsync(id);
-        
+
         if (organizer != null)
         {
             DbSet.Remove(organizer);
@@ -72,6 +72,11 @@ public class OrganizersRepository :  BaseRepository<Organizer>, IOrganizersRepos
     public async Task SaveChangesAsync()
     {
         await mDbContext.SaveChangesAsync();
+    }
+
+    public Organizer UpdateOrganizer(Organizer organizerToUpdate)
+    {
+        return DbSet.Update(organizerToUpdate).Entity;
     }
 
     protected override DbSet<Organizer> DbSet => mDbContext.Organizers;
