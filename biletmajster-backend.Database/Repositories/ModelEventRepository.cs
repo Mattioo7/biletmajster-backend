@@ -14,8 +14,10 @@ namespace biletmajster_backend.Database.Repositories
         {
             await mDbContext.Places.AddRangeAsync(_event.Places);
             // TODO: Use ICategoryInterface to update!
-            mDbContext.Categories.UpdateRange(_event.Categories); 
-
+            
+            mDbContext.Categories.UpdateRange(_event.Categories);
+            mDbContext.Organizers.Update(_event.Organizer);
+            
             await DbSet.AddAsync(_event);
             return await SaveChanges();
         }
