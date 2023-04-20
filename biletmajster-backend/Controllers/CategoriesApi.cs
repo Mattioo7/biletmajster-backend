@@ -33,40 +33,48 @@ namespace biletmajster_backend.Controllers
         /// <response code="400">category already exist</response>
         /// 
         private readonly ICategoriesRepository _categoriesRepository;
-
         private readonly IMapper _mapper;
+        private readonly ILogger<CategoriesApiController> _logger;
 
-        public CategoriesApiController(ICategoriesRepository categoriesRepository, IMapper mapper)
+        public CategoriesApiController(ICategoriesRepository categoriesRepository, IMapper mapper,ILogger<CategoriesApiController> logger)
         {
             _categoriesRepository = categoriesRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpPost]
         [Route("/api/v3/categories")]
-        [Authorize]
         [ValidateModelState]
+        [Authorize]
         [SwaggerOperation("AddCategories")]
         [SwaggerResponse(statusCode: 201, type: typeof(CategoryDTO), description: "created")]
         public virtual async Task<IActionResult> AddCategories([FromQuery] [Required()] string categoryName)
         {
+            _logger.LogDebug($"Add Category with name: {categoryName}");
+
             var tmp = _mapper.Map<Database.Entities.Category>(new CategoryDTO()
             {
                 Name = categoryName
             });
+
             if (await _categoriesRepository.GetCategoryByName(categoryName) != null)
             {
                 ModelState.Clear();
                 ModelState.AddModelError("", "Category already exists");
+                _logger.LogDebug($"Category with name: {categoryName} already exists");
                 return StatusCode(422, ModelState);
             }
 
             if (await _categoriesRepository.AddCategory(tmp))
+            {
                 return Ok("Successfully created");
+            }
             else
             {
                 ModelState.Clear();
                 ModelState.AddModelError("", "Something went wrong while savin");
+                _logger.LogDebug($"Category with name: {categoryName} was not added, something went wrong");
                 return StatusCode(500, ModelState);
             }
         }

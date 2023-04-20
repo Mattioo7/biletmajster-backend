@@ -21,6 +21,7 @@ public class ModelEvent
     public long FreePlace { get; set; }
     public long MaxPlace { get; set; }
     public ICollection<Place> Places { get; set; }
+    public Organizer Organizer { get; set; }
     public ModelEvent()
     {
         this.Categories = new List<Category>();
