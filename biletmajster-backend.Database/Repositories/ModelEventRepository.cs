@@ -27,7 +27,7 @@ namespace biletmajster_backend.Database.Repositories
             return saved > 0;
         }
 
-        public async Task<ModelEvent> GetEventById(int id)
+        public async Task<ModelEvent> GetEventById(long id)
         {
             return await DbSet.FindAsync(id);
         }
@@ -35,6 +35,16 @@ namespace biletmajster_backend.Database.Repositories
         public async Task<List<ModelEvent>> GetAllEvents()
         {
             return await DbSet.ToListAsync();
+        }
+
+        public async Task<bool> DeleteEvent(long id)
+        {
+            var Event = await GetEventById(id);
+            if (Event != null)
+                DbSet.Remove(Event);
+            else 
+                return false;
+            return await SaveChanges();
         }
     }
 }

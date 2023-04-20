@@ -15,6 +15,7 @@ using biletmajster_backend.Attributes;
 using biletmajster_backend.Database.Entities;
 using biletmajster_backend.Database.Repositories.Interfaces;
 using biletmajster_backend.Domain.DTOS;
+using biletmajster_backend.Domain.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
@@ -22,11 +23,12 @@ using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace biletmajster_backend.Controllers
-{ 
+{
     /// <summary>
     /// 
     /// </summary>
     [ApiController]
+    
     public class EventApiController : ControllerBase
     {
         /// <summary>
@@ -53,7 +55,7 @@ namespace biletmajster_backend.Controllers
         private readonly ILogger<EventApiController> _logger;
 
         public EventApiController(IMapper mapper, IModelEventRepository modelEventRepository, ICategoriesRepository categoriesRepository,
-            IPlaceRepository placeRepository,ILogger<EventApiController>
+            IPlaceRepository placeRepository, ILogger<EventApiController>
             logger, IOrganizersRepository organizersRepository)
         {
             _mapper = mapper;
@@ -70,10 +72,10 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("AddEvent")]
         [SwaggerResponse(statusCode: 201, type: typeof(ModelEvent), description: "event created")]
-        public virtual async Task<IActionResult> AddEvent([FromQuery][Required()]string title, [FromQuery][Required()]string name, 
-            [FromQuery][Required()]int? freePlace, [FromQuery][Required()]int? startTime, [FromQuery][Required()]int? endTime, 
-            [FromQuery][Required()]string latitude,[FromQuery][Required()]string longitude, [FromQuery][Required()]List<int?> categories,
-            [FromQuery]string placeSchema)
+        public virtual async Task<IActionResult> AddEvent([FromQuery][Required()] string title, [FromQuery][Required()] string name,
+            [FromQuery][Required()] int? freePlace, [FromQuery][Required()] int? startTime, [FromQuery][Required()] int? endTime,
+            [FromQuery][Required()] string latitude, [FromQuery][Required()] string longitude, [FromQuery][Required()] List<int?> categories,
+            [FromQuery] string placeSchema)
         {
             _logger.LogDebug($"Add event with name: {name}");
             //Event Model:
@@ -90,7 +92,7 @@ namespace biletmajster_backend.Controllers
             };
             var databaseEvent = _mapper.Map<ModelEvent>(modelEvent);
 
-            
+
             // Places List: (Database)
             // Handling Places
             List<Database.Entities.Place> places = new List<Database.Entities.Place>();
@@ -99,7 +101,7 @@ namespace biletmajster_backend.Controllers
                 var place = new Database.Entities.Place()
                 {
                     Free = true,
-                    SeatNumber = i+1,
+                    SeatNumber = i + 1,
                     Event = databaseEvent
                 };
                 places.Add(place);
@@ -108,10 +110,10 @@ namespace biletmajster_backend.Controllers
             // Category List:
             // Handling Categories
             List<Database.Entities.Category> categoriesList = new List<Database.Entities.Category>();
-            foreach(var id in categories)
+            foreach (var id in categories)
             {
                 var category = await _categoriesRepository.GetCategoryById((int)id);
-                if (id==null || category == null)
+                if (id == null || category == null)
                 {
                     ModelState.Clear();
                     ModelState.AddModelError("", $"Can 't find category with id: {id}");
@@ -152,15 +154,14 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("CancelEvent")]
-        public virtual IActionResult CancelEvent([FromRoute][Required]string id)
-        { 
-            //TODO: Uncomment the next line to return response 204 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(204);
-
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
-
-            throw new NotImplementedException();
+        public virtual async Task<IActionResult> CancelEvent([FromRoute][Required] string id)
+        {
+            _logger.LogDebug($"Delete event with id: {id}");
+            if (await _modelEventRepository.DeleteEvent(long.Parse(id)))
+            {
+                return Ok();
+            }
+            return NotFound(new ErrorResponse { Message = "Event not found" });
         }
 
         /// <summary>
@@ -174,8 +175,8 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetByCategory")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEvent>), description: "successful operation")]
-        public virtual IActionResult GetByCategory([FromQuery][Required()]long? categoryId)
-        { 
+        public virtual IActionResult GetByCategory([FromQuery][Required()] long? categoryId)
+        {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200, default(List<ModelEvent>));
 
@@ -183,10 +184,10 @@ namespace biletmajster_backend.Controllers
             // return StatusCode(400);
             string exampleJson = null;
             exampleJson = "[ {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}, {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n} ]";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
-                        : default(List<ModelEvent>);            //TODO: Change the data returned
+
+            var example = exampleJson != null
+            ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
+            : default(List<ModelEvent>);            //TODO: Change the data returned
             return new ObjectResult(example);
         }
 
@@ -203,8 +204,8 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetEventById")]
         [SwaggerResponse(statusCode: 200, type: typeof(ModelEvent), description: "successful operation")]
-        public virtual IActionResult GetEventById([FromRoute][Required]long? id)
-        { 
+        public virtual IActionResult GetEventById([FromRoute][Required] long? id)
+        {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200, default(ModelEvent));
 
@@ -215,10 +216,10 @@ namespace biletmajster_backend.Controllers
             // return StatusCode(404);
             string exampleJson = null;
             exampleJson = "{\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<ModelEvent>(exampleJson)
-                        : default(ModelEvent);            //TODO: Change the data returned
+
+            var example = exampleJson != null
+            ? JsonConvert.DeserializeObject<ModelEvent>(exampleJson)
+            : default(ModelEvent);            //TODO: Change the data returned
             return new ObjectResult(example);
         }
 
@@ -232,15 +233,15 @@ namespace biletmajster_backend.Controllers
         [SwaggerOperation("GetEvents")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEvent>), description: "successful operation")]
         public virtual IActionResult GetEvents()
-        { 
+        {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200, default(List<ModelEvent>));
             string exampleJson = null;
             exampleJson = "[ {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}, {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n} ]";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
-                        : default(List<ModelEvent>);            //TODO: Change the data returned
+
+            var example = exampleJson != null
+            ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
+            : default(List<ModelEvent>);            //TODO: Change the data returned
             return new ObjectResult(example);
         }
 
@@ -255,15 +256,15 @@ namespace biletmajster_backend.Controllers
         [SwaggerOperation("GetMyEvents")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEvent>), description: "successful operation")]
         public virtual IActionResult GetMyEvents()
-        { 
+        {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200, default(List<ModelEvent>));
             string exampleJson = null;
             exampleJson = "[ {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}, {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n} ]";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
-                        : default(List<ModelEvent>);            //TODO: Change the data returned
+
+            var example = exampleJson != null
+            ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
+            : default(List<ModelEvent>);            //TODO: Change the data returned
             return new ObjectResult(example);
         }
 
@@ -279,8 +280,8 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchEvent")]
-        public virtual IActionResult PatchEvent([FromRoute][Required]string id, [FromBody]ModelEvent body)
-        { 
+        public virtual IActionResult PatchEvent([FromRoute][Required] string id, [FromBody] ModelEvent body)
+        {
             //TODO: Uncomment the next line to return response 202 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(202);
 
