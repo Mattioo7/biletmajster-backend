@@ -9,6 +9,7 @@
  */
 
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using AutoMapper;
 using biletmajster_backend.Attributes;
 using biletmajster_backend.Database.Entities;
@@ -48,14 +49,19 @@ namespace biletmajster_backend.Controllers
         private readonly IModelEventRepository _modelEventRepository;
         private readonly ICategoriesRepository _categoriesRepository;
         private readonly IPlaceRepository _placeRepository;
+        private readonly IOrganizersRepository _organizersRepository;
+        private readonly ILogger<EventApiController> _logger;
 
         public EventApiController(IMapper mapper, IModelEventRepository modelEventRepository, ICategoriesRepository categoriesRepository,
-            IPlaceRepository placeRepository)
+            IPlaceRepository placeRepository,ILogger<EventApiController>
+            logger, IOrganizersRepository organizersRepository)
         {
             _mapper = mapper;
             _modelEventRepository = modelEventRepository;
             _categoriesRepository = categoriesRepository;
             _placeRepository = placeRepository;
+            _logger = logger;
+            _organizersRepository = organizersRepository;
         }
 
         [HttpPost]
@@ -69,6 +75,7 @@ namespace biletmajster_backend.Controllers
             [FromQuery][Required()]string latitude,[FromQuery][Required()]string longitude, [FromQuery][Required()]List<int?> categories,
             [FromQuery]string placeSchema)
         {
+            _logger.LogDebug($"Add event with name: {name}");
             //Event Model:
             ModelEventDTO modelEvent = new ModelEventDTO()
             {
@@ -83,6 +90,7 @@ namespace biletmajster_backend.Controllers
             };
             var databaseEvent = _mapper.Map<ModelEvent>(modelEvent);
 
+            
             // Places List: (Database)
             // Handling Places
             List<Database.Entities.Place> places = new List<Database.Entities.Place>();
@@ -107,6 +115,7 @@ namespace biletmajster_backend.Controllers
                 {
                     ModelState.Clear();
                     ModelState.AddModelError("", $"Can 't find category with id: {id}");
+                    _logger.LogDebug($"Category with id: {id} can not be found");
                     return BadRequest(ModelState);
                 }
                 categoriesList.Add(category);
@@ -114,6 +123,11 @@ namespace biletmajster_backend.Controllers
             }
             databaseEvent.Categories = categoriesList;
             databaseEvent.Places = places;
+
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
+            databaseEvent.Organizer = organizer;
+            organizer.Events.Add(databaseEvent);
 
             if (await _modelEventRepository.AddEvent(databaseEvent))
             {
