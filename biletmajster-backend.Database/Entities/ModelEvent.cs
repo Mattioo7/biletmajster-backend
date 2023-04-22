@@ -30,11 +30,16 @@ public class ModelEvent
     }
     public void UpdateData(ModelEvent e)
     {
+        this.MaxPlace += e.FreePlace - this.FreePlace;
         this.FreePlace = e.FreePlace;
         this.StartTime= e.StartTime;
         this.Title= e.Title;
         this.Name= e.Name;
         this.EndTime = e.EndTime;
         this.PlaceSchema= e.PlaceSchema;
+    }
+    public List<Place> GetFreePlaces()
+    {
+        return Places.Where(x => x.Free.Equals(true)).ToList();
     }
 }

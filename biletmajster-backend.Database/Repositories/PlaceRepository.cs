@@ -15,7 +15,6 @@ namespace biletmajster_backend.Database.Repositories
             await DbSet.AddAsync(place);
             return await SaveChanges();
         }
-
         public async Task<bool> RemovePlace(Place place)
         {
             DbSet.Remove(place);
