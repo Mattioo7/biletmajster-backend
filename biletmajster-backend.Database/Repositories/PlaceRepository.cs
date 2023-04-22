@@ -10,18 +10,18 @@ namespace biletmajster_backend.Database.Repositories
         {
         }
         protected override DbSet<Place> DbSet => mDbContext.Places;
-        public async Task<bool> AddPlace(Place place)
+        public async Task<bool> AddPlaceAsync(Place place)
         {
             await DbSet.AddAsync(place);
-            return await SaveChanges();
+            return await SaveChangesAsync();
         }
-        public async Task<bool> RemovePlace(Place place)
+        public async Task<bool> RemovePlaceAsync(Place place)
         {
             DbSet.Remove(place);
-            return await SaveChanges();
+            return await SaveChangesAsync();
         }
 
-        public async Task<bool> SaveChanges()
+        public async Task<bool> SaveChangesAsync()
         {
             var saved = await mDbContext.SaveChangesAsync();
             return saved > 0;

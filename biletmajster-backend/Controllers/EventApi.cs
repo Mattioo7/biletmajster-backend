@@ -28,7 +28,7 @@ namespace biletmajster_backend.Controllers
     /// 
     /// </summary>
     [ApiController]
-    
+
     public class EventApiController : ControllerBase
     {
         /// <summary>
@@ -113,7 +113,7 @@ namespace biletmajster_backend.Controllers
             List<Database.Entities.Category> categoriesList = new List<Database.Entities.Category>();
             foreach (var id in categories)
             {
-                var category = await _categoriesRepository.GetCategoryById((int)id);
+                var category = await _categoriesRepository.GetCategoryByIdAsync((int)id);
                 if (id == null || category == null)
                 {
                     ModelState.Clear();
@@ -132,7 +132,7 @@ namespace biletmajster_backend.Controllers
             databaseEvent.Organizer = organizer;
             organizer.Events.Add(databaseEvent);
 
-            if (await _modelEventRepository.AddEvent(databaseEvent))
+            if (await _modelEventRepository.AddEventAsync(databaseEvent))
             {
                 return new ObjectResult(_mapper.Map<ModelEventDTO>(databaseEvent));
             }
@@ -158,7 +158,7 @@ namespace biletmajster_backend.Controllers
         public virtual async Task<IActionResult> CancelEvent([FromRoute][Required] string id)
         {
             _logger.LogDebug($"Delete event with id: {id}");
-            if (await _modelEventRepository.DeleteEvent(long.Parse(id)))
+            if (await _modelEventRepository.DeleteEventAsync(long.Parse(id)))
             {
                 return Ok();
             }
@@ -285,7 +285,7 @@ namespace biletmajster_backend.Controllers
         {
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
-            var EventToUpdate = await _modelEventRepository.GetEventById(long.Parse(id));
+            var EventToUpdate = await _modelEventRepository.GetEventByIdAsync(long.Parse(id));
             if (EventToUpdate == null)
             {
                 return NotFound(new ErrorResponse { Message = $"Event with id: {long.Parse(id)} not found" });
@@ -320,12 +320,12 @@ namespace biletmajster_backend.Controllers
                 categoriesList.Add(category);
             }
             EventToUpdate.Categories.Clear();
-            await _categoriesRepository.UpdateCategories(categoriesList);
+            await _categoriesRepository.UpdateCategoriesAsync(categoriesList);
             if (body.Categories.Count != 0)
             {
                 foreach (var category in body.Categories)
                 {
-                    var currCategory = await _categoriesRepository.GetCategoryById((long)category.Id);
+                    var currCategory = await _categoriesRepository.GetCategoryByIdAsync((long)category.Id);
                     if (currCategory == null)
                     {
                         return NotFound(new ErrorResponse { Message = $"Category with id: {category.Id} not found" });
@@ -336,7 +336,7 @@ namespace biletmajster_backend.Controllers
                 }
             }
             EventToUpdate.UpdateData(_mapper.Map<ModelEvent>(body));
-            await _modelEventRepository.PatchEvent(EventToUpdate, places);
+            await _modelEventRepository.PatchEventAsync(EventToUpdate, places);
             return new ObjectResult(_mapper.Map<ModelEventDTO>(EventToUpdate));
         }
     }

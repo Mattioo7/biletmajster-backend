@@ -58,7 +58,7 @@ namespace biletmajster_backend.Controllers
                 Name = categoryName
             });
 
-            if (await _categoriesRepository.GetCategoryByName(categoryName) != null)
+            if (await _categoriesRepository.GetCategoryByNameAsync(categoryName) != null)
             {
                 ModelState.Clear();
                 ModelState.AddModelError("", "Category already exists");
@@ -66,7 +66,7 @@ namespace biletmajster_backend.Controllers
                 return StatusCode(422, ModelState);
             }
 
-            if (await _categoriesRepository.AddCategory(tmp))
+            if (await _categoriesRepository.AddCategoryAsync(tmp))
             {
                 return Ok("Successfully created");
             }
@@ -90,7 +90,7 @@ namespace biletmajster_backend.Controllers
         [SwaggerResponse(statusCode: 200, type: typeof(List<CategoryDTO>), description: "successful operation")]
         public virtual async Task<IActionResult> GetCategories()
         {
-            var categories = await _categoriesRepository.GetAllCategories();
+            var categories = await _categoriesRepository.GetAllCategoriesAsync();
             var resultList = new List<Domain.DTOS.CategoryDTO>();
             foreach (var category in categories)
             {

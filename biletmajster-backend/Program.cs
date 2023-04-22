@@ -32,7 +32,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = configuration["Jwt:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Token"]))
         };
-        
+
         // for mapping custom sessionToken to Bearer token
         options.Events = JwtAuthEventsHandler.Instance;
     });
@@ -47,7 +47,7 @@ builder.Services.AddSingleton(
 // Scoped
 builder.Services.AddScoped<ICustomMailService, MailService>();
 
-services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b=> b.MigrationsAssembly("biletmajster-backend")));
+services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("biletmajster-backend")));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(configuration.GetConnectionString("LocalApi"), builder =>
@@ -61,7 +61,7 @@ services.AddScoped<IAccountConfirmationCodeRepository, AccountConfirmationCodeRe
 services.AddScoped<IOrganizersRepository, OrganizersRepository>();
 services.AddScoped<IConfirmationService, ConfirmationService>();
 services.AddScoped<IOrganizerIdentityManager, OrganizerIdentityManager>();
-services.AddScoped<IPlaceRepository,PlaceRepository>();
+services.AddScoped<IPlaceRepository, PlaceRepository>();
 
 // Data Base Section:
 
