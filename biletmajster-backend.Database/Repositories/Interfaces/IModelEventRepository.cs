@@ -9,6 +9,7 @@ namespace biletmajster_backend.Database.Repositories.Interfaces
         public Task<List<ModelEvent>> GetAllEvents();
 
         public Task<bool> DeleteEvent(long id);
+        public Task<bool> PatchEvent(ModelEvent body); 
         public Task<bool> AddEvent(ModelEvent _event);
         
         public Task<bool> SaveChanges();

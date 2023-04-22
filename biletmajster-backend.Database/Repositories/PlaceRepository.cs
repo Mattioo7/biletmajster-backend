@@ -16,6 +16,12 @@ namespace biletmajster_backend.Database.Repositories
             return await SaveChanges();
         }
 
+        public async Task<bool> RemovePlace(Place place)
+        {
+            DbSet.Remove(place);
+            return await SaveChanges();
+        }
+
         public async Task<bool> SaveChanges()
         {
             var saved = await mDbContext.SaveChangesAsync();
