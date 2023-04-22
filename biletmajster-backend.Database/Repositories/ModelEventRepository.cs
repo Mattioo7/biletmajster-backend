@@ -46,5 +46,14 @@ namespace biletmajster_backend.Database.Repositories
                 return false;
             return await SaveChanges();
         }
+
+        public async Task<bool> PatchEvent(ModelEvent body)
+        {
+            await mDbContext.Places.AddRangeAsync(body.Places);
+            mDbContext.Categories.UpdateRange(body.Categories);
+            
+            DbSet.Update(body);
+            return await SaveChanges();
+        }
     }
 }

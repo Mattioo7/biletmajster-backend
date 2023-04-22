@@ -280,15 +280,66 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchEvent")]
-        public virtual IActionResult PatchEvent([FromRoute][Required] string id, [FromBody] ModelEvent body)
+        public virtual async Task<IActionResult> PatchEvent([FromRoute][Required] string id, [FromBody] ModelEventDTO body)
         {
-            //TODO: Uncomment the next line to return response 202 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(202);
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
 
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
+            var EventToUpdate = await _modelEventRepository.GetEventById(long.Parse(id));
+            if (EventToUpdate == null)
+            {
+                return NotFound(new ErrorResponse { Message = $"Event with id: {long.Parse(id)} not found" });
+            }
+            if (EventToUpdate.Organizer.Id != organizer.Id)
+            {
+                return BadRequest(new ErrorResponse { Message = $"Event with id: {long.Parse(id)} does not belong to you" });
+            }
+            if (EventToUpdate.Status != EventStatus.InFuture)
+            {
+                return BadRequest(new ErrorResponse { Message = "Event has just started, you can not edit ongoing events" });
+            }
+            if (EventToUpdate.FreePlace != body.FreePlace)
+            {
+                EventToUpdate.Places.Clear();
+                //List<Database.Entities.Place> places = new List<Database.Entities.Place>();
+                for (int i = 0; i < body.FreePlace; i++)
+                {
+                    var place = new Database.Entities.Place()
+                    {
+                        Free = true,
+                        SeatNumber = i + 1,
+                        Event = EventToUpdate
+                    };
+                    EventToUpdate.Places.Add(place);
+                }
+            }
+            if (body.Categories != null)
+            {
+                List<Database.Entities.Category> categoriesList = new List<Database.Entities.Category>();
+                foreach (var category in EventToUpdate.Categories)
+                {
+                    category.Events.Remove(EventToUpdate);
+                    categoriesList.Add(category);
+                }
+                
+                EventToUpdate.Categories.Clear();
+                
+                await _categoriesRepository.UpdateCategories(categoriesList);
 
-            throw new NotImplementedException();
+                foreach (var category in body.Categories)
+                {
+                    var currCategory = await _categoriesRepository.GetCategoryById((long)category.Id);
+                    if (currCategory == null)
+                    {
+                        return NotFound(new ErrorResponse { Message = $"Category with id: {long.Parse(id)} not found" });
+                    }
+                    categoriesList.Add(currCategory);
+                    currCategory.Events.Add(EventToUpdate);
+                    EventToUpdate.Categories.Add(currCategory);
+                }
+                await _modelEventRepository.PatchEvent(EventToUpdate);
+            }
+            return Ok();
         }
     }
 }
