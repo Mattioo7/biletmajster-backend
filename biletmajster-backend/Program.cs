@@ -75,7 +75,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
-        policy.SetIsOriginAllowed(host => host.StartsWith(builder.Configuration["FrontendUrl"]!))
+        policy.SetIsOriginAllowed(host => true)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
