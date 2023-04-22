@@ -24,16 +24,8 @@ namespace biletmajster_backend.Domain.DTOS
     /// 
     /// </summary>
     [DataContract]
-    public partial class ModelEventDTO : IEquatable<ModelEventDTO>
+    public partial class EventFormDTO : IEquatable<EventFormDTO>
     { 
-        /// <summary>
-        /// Gets or Sets Id
-        /// </summary>
-        [Required]
-
-        [DataMember(Name="id")]
-        public long? Id { get; set; }
-
         /// <summary>
         /// Gets or Sets Title
         /// </summary>
@@ -41,6 +33,14 @@ namespace biletmajster_backend.Domain.DTOS
 
         [DataMember(Name="title")]
         public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or Sets Name
+        /// </summary>
+        [Required]
+
+        [DataMember(Name="name")]
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or Sets StartTime
@@ -75,36 +75,11 @@ namespace biletmajster_backend.Domain.DTOS
         public string Longitude { get; set; }
 
         /// <summary>
-        /// Gets or Sets Name
+        /// Gets or Sets PlaceSchema
         /// </summary>
-        [Required]
 
-        [DataMember(Name="name")]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or Sets Status
-        /// </summary>
-        [Required]
-
-        [DataMember(Name="status")]
-        public EventStatusDTO Status { get; set; }
-
-        /// <summary>
-        /// Gets or Sets Categories
-        /// </summary>
-        [Required]
-
-        [DataMember(Name="categories")]
-        public List<CategoryDTO> Categories { get; set; }
-
-        /// <summary>
-        /// Gets or Sets FreePlace
-        /// </summary>
-        [Required]
-
-        [DataMember(Name="freePlace")]
-        public long? FreePlace { get; set; }
+        [DataMember(Name="placeSchema")]
+        public string PlaceSchema { get; set; }
 
         /// <summary>
         /// Gets or Sets MaxPlace
@@ -115,24 +90,30 @@ namespace biletmajster_backend.Domain.DTOS
         public long? MaxPlace { get; set; }
 
         /// <summary>
+        /// Gets or Sets CategoriesIds
+        /// </summary>
+        [Required]
+
+        [DataMember(Name="categoriesIds")]
+        public List<int?> CategoriesIds { get; set; }
+
+        /// <summary>
         /// Returns the string presentation of the object
         /// </summary>
         /// <returns>String presentation of the object</returns>
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("class ModelEvent {\n");
-            sb.Append("  Id: ").Append(Id).Append("\n");
+            sb.Append("class EventForm {\n");
             sb.Append("  Title: ").Append(Title).Append("\n");
+            sb.Append("  Name: ").Append(Name).Append("\n");
             sb.Append("  StartTime: ").Append(StartTime).Append("\n");
             sb.Append("  EndTime: ").Append(EndTime).Append("\n");
             sb.Append("  Latitude: ").Append(Latitude).Append("\n");
             sb.Append("  Longitude: ").Append(Longitude).Append("\n");
-            sb.Append("  Name: ").Append(Name).Append("\n");
-            sb.Append("  Status: ").Append(Status).Append("\n");
-            sb.Append("  Categories: ").Append(Categories).Append("\n");
-            sb.Append("  FreePlace: ").Append(FreePlace).Append("\n");
+            sb.Append("  PlaceSchema: ").Append(PlaceSchema).Append("\n");
             sb.Append("  MaxPlace: ").Append(MaxPlace).Append("\n");
+            sb.Append("  CategoriesIds: ").Append(CategoriesIds).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -155,29 +136,29 @@ namespace biletmajster_backend.Domain.DTOS
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((ModelEventDTO)obj);
+            return obj.GetType() == GetType() && Equals((EventFormDTO)obj);
         }
 
         /// <summary>
-        /// Returns true if ModelEvent instances are equal
+        /// Returns true if EventForm instances are equal
         /// </summary>
-        /// <param name="other">Instance of ModelEvent to be compared</param>
+        /// <param name="other">Instance of EventForm to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals(ModelEventDTO other)
+        public bool Equals(EventFormDTO other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
 
             return 
                 (
-                    Id == other.Id ||
-                    Id != null &&
-                    Id.Equals(other.Id)
-                ) && 
-                (
                     Title == other.Title ||
                     Title != null &&
                     Title.Equals(other.Title)
+                ) && 
+                (
+                    Name == other.Name ||
+                    Name != null &&
+                    Name.Equals(other.Name)
                 ) && 
                 (
                     StartTime == other.StartTime ||
@@ -200,29 +181,19 @@ namespace biletmajster_backend.Domain.DTOS
                     Longitude.Equals(other.Longitude)
                 ) && 
                 (
-                    Name == other.Name ||
-                    Name != null &&
-                    Name.Equals(other.Name)
-                ) && 
-                (
-                    Status == other.Status ||
-                    Status != null &&
-                    Status.Equals(other.Status)
-                ) && 
-                (
-                    Categories == other.Categories ||
-                    Categories != null &&
-                    Categories.SequenceEqual(other.Categories)
-                ) && 
-                (
-                    FreePlace == other.FreePlace ||
-                    FreePlace != null &&
-                    FreePlace.Equals(other.FreePlace)
+                    PlaceSchema == other.PlaceSchema ||
+                    PlaceSchema != null &&
+                    PlaceSchema.Equals(other.PlaceSchema)
                 ) && 
                 (
                     MaxPlace == other.MaxPlace ||
                     MaxPlace != null &&
                     MaxPlace.Equals(other.MaxPlace)
+                ) && 
+                (
+                    CategoriesIds == other.CategoriesIds ||
+                    CategoriesIds != null &&
+                    CategoriesIds.SequenceEqual(other.CategoriesIds)
                 );
         }
 
@@ -236,10 +207,10 @@ namespace biletmajster_backend.Domain.DTOS
             {
                 var hashCode = 41;
                 // Suitable nullity checks etc, of course :)
-                    if (Id != null)
-                    hashCode = hashCode * 59 + Id.GetHashCode();
                     if (Title != null)
                     hashCode = hashCode * 59 + Title.GetHashCode();
+                    if (Name != null)
+                    hashCode = hashCode * 59 + Name.GetHashCode();
                     if (StartTime != null)
                     hashCode = hashCode * 59 + StartTime.GetHashCode();
                     if (EndTime != null)
@@ -248,16 +219,12 @@ namespace biletmajster_backend.Domain.DTOS
                     hashCode = hashCode * 59 + Latitude.GetHashCode();
                     if (Longitude != null)
                     hashCode = hashCode * 59 + Longitude.GetHashCode();
-                    if (Name != null)
-                    hashCode = hashCode * 59 + Name.GetHashCode();
-                    if (Status != null)
-                    hashCode = hashCode * 59 + Status.GetHashCode();
-                    if (Categories != null)
-                    hashCode = hashCode * 59 + Categories.GetHashCode();
-                    if (FreePlace != null)
-                    hashCode = hashCode * 59 + FreePlace.GetHashCode();
+                    if (PlaceSchema != null)
+                    hashCode = hashCode * 59 + PlaceSchema.GetHashCode();
                     if (MaxPlace != null)
                     hashCode = hashCode * 59 + MaxPlace.GetHashCode();
+                    if (CategoriesIds != null)
+                    hashCode = hashCode * 59 + CategoriesIds.GetHashCode();
                 return hashCode;
             }
         }
@@ -265,12 +232,12 @@ namespace biletmajster_backend.Domain.DTOS
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(ModelEventDTO left, ModelEventDTO right)
+        public static bool operator ==(EventFormDTO left, EventFormDTO right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(ModelEventDTO left, ModelEventDTO right)
+        public static bool operator !=(EventFormDTO left, EventFormDTO right)
         {
             return !Equals(left, right);
         }

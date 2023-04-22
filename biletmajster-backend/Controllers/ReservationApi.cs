@@ -30,10 +30,10 @@ namespace biletmajster_backend.Controllers
         /// <response code="204">deleted</response>
         /// <response code="404">token not found</response>
         [HttpDelete]
-        [Route("/api/v3/reservation")]
+        [Route("/reservation")]
         [ValidateModelState]
         [SwaggerOperation("DeleteReservation")]
-        public virtual IActionResult DeleteReservation([FromQuery][Required()]string reservationToken)
+        public virtual async Task<IActionResult> DeleteReservation([FromHeader][Required]string reservationToken)
         { 
             //TODO: Uncomment the next line to return response 204 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(204);
@@ -50,14 +50,14 @@ namespace biletmajster_backend.Controllers
         /// <param name="eventId">ID of event</param>
         /// <param name="placeID">ID of place</param>
         /// <response code="201">created</response>
-        /// <response code="400">no free place</response>
+        /// <response code="400">no free place or place taken</response>
         /// <response code="404">event not exist or done</response>
         [HttpPost]
-        [Route("/api/v3/reservation")]
+        [Route("/reservation")]
         [ValidateModelState]
         [SwaggerOperation("MakeReservation")]
         [SwaggerResponse(statusCode: 201, type: typeof(ReservationDTO), description: "created")]
-        public virtual IActionResult MakeReservation([FromQuery][Required()]long? eventId, [FromQuery]long? placeID)
+        public virtual IActionResult MakeReservation([FromHeader][Required]long? eventId, [FromHeader]long? placeID)
         { 
             //TODO: Uncomment the next line to return response 201 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(201, default(ReservationDTO));

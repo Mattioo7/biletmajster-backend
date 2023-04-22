@@ -24,15 +24,31 @@ namespace biletmajster_backend.Domain.DTOS
     /// 
     /// </summary>
     [DataContract]
-    public partial class InlineResponse200 : IEquatable<InlineResponse200>
+    public partial class OrganizerFormDTO : IEquatable<OrganizerFormDTO>
     { 
         /// <summary>
-        /// The session token.
+        /// Gets or Sets Name
         /// </summary>
-        /// <value>The session token.</value>
+        [Required]
 
-        [DataMember(Name="sessionToken")]
-        public string SessionToken { get; set; }
+        [DataMember(Name="name")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or Sets Email
+        /// </summary>
+        [Required]
+
+        [DataMember(Name="email")]
+        public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or Sets Password
+        /// </summary>
+        [Required]
+
+        [DataMember(Name="password")]
+        public string Password { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object
@@ -41,8 +57,10 @@ namespace biletmajster_backend.Domain.DTOS
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("class InlineResponse200 {\n");
-            sb.Append("  SessionToken: ").Append(SessionToken).Append("\n");
+            sb.Append("class OrganizerForm {\n");
+            sb.Append("  Name: ").Append(Name).Append("\n");
+            sb.Append("  Email: ").Append(Email).Append("\n");
+            sb.Append("  Password: ").Append(Password).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -65,24 +83,34 @@ namespace biletmajster_backend.Domain.DTOS
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((InlineResponse200)obj);
+            return obj.GetType() == GetType() && Equals((OrganizerFormDTO)obj);
         }
 
         /// <summary>
-        /// Returns true if InlineResponse200 instances are equal
+        /// Returns true if OrganizerForm instances are equal
         /// </summary>
-        /// <param name="other">Instance of InlineResponse200 to be compared</param>
+        /// <param name="other">Instance of OrganizerForm to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals(InlineResponse200 other)
+        public bool Equals(OrganizerFormDTO other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
 
             return 
                 (
-                    SessionToken == other.SessionToken ||
-                    SessionToken != null &&
-                    SessionToken.Equals(other.SessionToken)
+                    Name == other.Name ||
+                    Name != null &&
+                    Name.Equals(other.Name)
+                ) && 
+                (
+                    Email == other.Email ||
+                    Email != null &&
+                    Email.Equals(other.Email)
+                ) && 
+                (
+                    Password == other.Password ||
+                    Password != null &&
+                    Password.Equals(other.Password)
                 );
         }
 
@@ -96,8 +124,12 @@ namespace biletmajster_backend.Domain.DTOS
             {
                 var hashCode = 41;
                 // Suitable nullity checks etc, of course :)
-                    if (SessionToken != null)
-                    hashCode = hashCode * 59 + SessionToken.GetHashCode();
+                    if (Name != null)
+                    hashCode = hashCode * 59 + Name.GetHashCode();
+                    if (Email != null)
+                    hashCode = hashCode * 59 + Email.GetHashCode();
+                    if (Password != null)
+                    hashCode = hashCode * 59 + Password.GetHashCode();
                 return hashCode;
             }
         }
@@ -105,12 +137,12 @@ namespace biletmajster_backend.Domain.DTOS
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(InlineResponse200 left, InlineResponse200 right)
+        public static bool operator ==(OrganizerFormDTO left, OrganizerFormDTO right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(InlineResponse200 left, InlineResponse200 right)
+        public static bool operator !=(OrganizerFormDTO left, OrganizerFormDTO right)
         {
             return !Equals(left, right);
         }
