@@ -17,7 +17,6 @@ using biletmajster_backend.Database.Repositories.Interfaces;
 using biletmajster_backend.Domain.DTOS;
 using biletmajster_backend.Domain.Errors;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
@@ -31,22 +30,6 @@ namespace biletmajster_backend.Controllers
 
     public class EventApiController : ControllerBase
     {
-        /// <summary>
-        /// Add new event
-        /// </summary>
-        /// <param name="title">title of Event</param>
-        /// <param name="name">title of Event</param>
-        /// <param name="freePlace">No of free places</param>
-        /// <param name="startTime">Unix time stamp of begin of event</param>
-        /// <param name="endTime">Unix time stamp of end of event</param>
-        /// <param name="latitude">Latitude of event</param>
-        /// <param name="longitude">Longitude of event</param>
-        /// <param name="categories">Array of id of categories that event belong to.</param>
-        /// <param name="placeSchema">seralized place schema</param>
-        /// <response code="201">event created</response>
-        /// <response code="400">event can not be created</response>
-        /// 
-
         private readonly IMapper _mapper;
         private readonly IModelEventRepository _modelEventRepository;
         private readonly ICategoriesRepository _categoriesRepository;
@@ -66,38 +49,31 @@ namespace biletmajster_backend.Controllers
             _organizersRepository = organizersRepository;
         }
 
+        /// <summary>
+        /// Add new event
+        /// </summary>
+        /// <param name="body">Add event</param>
+        /// <response code="201">event created</response>
+        /// <response code="400">event can not be created, field invalid</response>
+        /// <response code="403">invalid session</response>
         [HttpPost]
-        [Route("/api/v3/events")]
+        [Route("/events")]
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("AddEvent")]
-        [SwaggerResponse(statusCode: 201, type: typeof(ModelEvent), description: "event created")]
-        public virtual async Task<IActionResult> AddEvent([FromQuery][Required()] string title, [FromQuery][Required()] string name,
-            [FromQuery][Required()] int? freePlace, [FromQuery][Required()] int? startTime, [FromQuery][Required()] int? endTime,
-            [FromQuery][Required()] string latitude, [FromQuery][Required()] string longitude, [FromQuery][Required()] List<int?> categories,
-            [FromQuery] string placeSchema)
+        [SwaggerResponse(statusCode: 201, type: typeof(ModelEventDTO), description: "event created")]
+        public virtual async Task<IActionResult> AddEvent([FromBody]EventFormDTO body)
         {
-            _logger.LogDebug($"Add event with name: {name}");
+            _logger.LogDebug($"Add event with name: {body.Name}");
             //Event Model:
-            ModelEventDTO modelEvent = new ModelEventDTO()
-            {
-                Title = title,
-                Name = name,
-                FreePlace = freePlace,
-                MaxPlace = freePlace,
-                StartTime = startTime,
-                EndTime = endTime,
-                Latitude = latitude,
-                Longitude = longitude,
-                PlaceSchema = placeSchema
-            };
-            var databaseEvent = _mapper.Map<ModelEvent>(modelEvent);
+           
+            var databaseEvent = _mapper.Map<ModelEvent>(body);
 
 
             // Places List: (Database)
             // Handling Places
             List<Database.Entities.Place> places = new List<Database.Entities.Place>();
-            for (int i = 0; i < freePlace; i++)
+            for (int i = 0; i < body.MaxPlace; i++)
             {
                 var place = new Database.Entities.Place()
                 {
@@ -111,7 +87,7 @@ namespace biletmajster_backend.Controllers
             // Category List:
             // Handling Categories
             List<Database.Entities.Category> categoriesList = new List<Database.Entities.Category>();
-            foreach (var id in categories)
+            foreach (var id in body.CategoriesIds)
             {
                 var category = await _categoriesRepository.GetCategoryByIdAsync((int)id);
                 if (id == null || category == null)
@@ -149,13 +125,14 @@ namespace biletmajster_backend.Controllers
         /// </summary>
         /// <param name="id">id of Event</param>
         /// <response code="204">deleted</response>
+        /// <response code="403">invalid session</response>
         /// <response code="404">id not found</response>
         [HttpDelete]
-        [Route("/api/v3/events/{id}")]
+        [Route("/events/{id}")]
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("CancelEvent")]
-        public virtual async Task<IActionResult> CancelEvent([FromRoute][Required] string id)
+        public virtual async Task<IActionResult> CancelEvent([FromRoute][Required]string id)
         {
             _logger.LogDebug($"Delete event with id: {id}");
             if (await _modelEventRepository.DeleteEventAsync(long.Parse(id)))
@@ -172,11 +149,11 @@ namespace biletmajster_backend.Controllers
         /// <response code="200">successful operation</response>
         /// <response code="400">Invalid category ID supplied</response>
         [HttpGet]
-        [Route("/api/v3/events/getByCategory")]
+        [Route("/events/getByCategory")]
         [ValidateModelState]
         [SwaggerOperation("GetByCategory")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEvent>), description: "successful operation")]
-        public virtual IActionResult GetByCategory([FromQuery][Required()] long? categoryId)
+        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
+        public virtual async Task<IActionResult> GetByCategory([FromHeader][Required]long? categoryId)
         {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200, default(List<ModelEvent>));
@@ -201,11 +178,11 @@ namespace biletmajster_backend.Controllers
         /// <response code="400">Invalid ID supplied</response>
         /// <response code="404">Event not found</response>
         [HttpGet]
-        [Route("/api/v3/events/{id}")]
+        [Route("/events/{id}")]
         [ValidateModelState]
         [SwaggerOperation("GetEventById")]
-        [SwaggerResponse(statusCode: 200, type: typeof(ModelEvent), description: "successful operation")]
-        public virtual IActionResult GetEventById([FromRoute][Required] long? id)
+        [SwaggerResponse(statusCode: 200, type: typeof(EventWithPlacesDTO), description: "successful operation")]
+        public virtual IActionResult GetEventById([FromRoute][Required]long? id)
         {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
             // return StatusCode(200, default(ModelEvent));
@@ -229,10 +206,10 @@ namespace biletmajster_backend.Controllers
         /// </summary>
         /// <response code="200">successful operation</response>
         [HttpGet]
-        [Route("/api/v3/events")]
+        [Route("/events")]
         [ValidateModelState]
         [SwaggerOperation("GetEvents")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEvent>), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
         public virtual IActionResult GetEvents()
         {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
@@ -250,12 +227,13 @@ namespace biletmajster_backend.Controllers
         /// Return list of events made by organizer, according to session
         /// </summary>
         /// <response code="200">successful operation</response>
+        /// <response code="403">invalid session</response>
         [HttpGet]
-        [Route("/api/v3/events/my")]
+        [Route("/events/my")]
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("GetMyEvents")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEvent>), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
         public virtual IActionResult GetMyEvents()
         {
             //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
@@ -274,14 +252,17 @@ namespace biletmajster_backend.Controllers
         /// </summary>
         /// <param name="id">id of Event</param>
         /// <param name="body">Update an existent user in the store</param>
+        /// <response code="200">nothing to do, no field to patch</response>
         /// <response code="202">patched</response>
+        /// <response code="400">invalid id or fields in body</response>
+        /// <response code="403">invalid session</response>
         /// <response code="404">id not found</response>
         [HttpPatch]
-        [Route("/api/v3/events/{id}")]
+        [Route("/events/{id}")]
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchEvent")]
-        public virtual async Task<IActionResult> PatchEvent([FromRoute][Required] string id, [FromBody] ModelEventDTO body)
+        public virtual async Task<IActionResult> PatchEvent([FromRoute][Required]string id, [FromBody]EventPatchDTO body)
         {
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
@@ -299,10 +280,10 @@ namespace biletmajster_backend.Controllers
                 return BadRequest(new ErrorResponse { Message = "Event has just started, you can not edit ongoing events" });
             }
             List<Place> places = new List<Place>();
-            if (EventToUpdate.GetFreePlaces().Count < body.FreePlace)
+            if (EventToUpdate.GetFreePlaces().Count < body.MaxPlace)
             {
                 int idx = EventToUpdate.Places.Count;
-                for (int i = idx; i < body.FreePlace; i++)
+                for (int i = idx; i < body.MaxPlace; i++)
                 {
                     var place = new Database.Entities.Place()
                     {
@@ -321,14 +302,14 @@ namespace biletmajster_backend.Controllers
             }
             EventToUpdate.Categories.Clear();
             await _categoriesRepository.UpdateCategoriesAsync(categoriesList);
-            if (body.Categories.Count != 0)
+            if (body.CategoriesIds.Count != 0)
             {
-                foreach (var category in body.Categories)
+                foreach (var categoryId in body.CategoriesIds)
                 {
-                    var currCategory = await _categoriesRepository.GetCategoryByIdAsync((long)category.Id);
+                    var currCategory = await _categoriesRepository.GetCategoryByIdAsync(categoryId.Value);
                     if (currCategory == null)
                     {
-                        return NotFound(new ErrorResponse { Message = $"Category with id: {category.Id} not found" });
+                        return NotFound(new ErrorResponse { Message = $"Category with id: {categoryId} not found" });
                     }
                     categoriesList.Add(currCategory);
                     currCategory.Events.Add(EventToUpdate);

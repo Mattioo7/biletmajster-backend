@@ -24,7 +24,7 @@ namespace biletmajster_backend.Domain.DTOS
     /// 
     /// </summary>
     [DataContract]
-    public partial class ModelEventDTO : IEquatable<ModelEventDTO>
+    public partial class EventWithPlacesDTO : IEquatable<EventWithPlacesDTO>
     { 
         /// <summary>
         /// Gets or Sets Id
@@ -115,13 +115,28 @@ namespace biletmajster_backend.Domain.DTOS
         public long? MaxPlace { get; set; }
 
         /// <summary>
+        /// Gets or Sets Places
+        /// </summary>
+        [Required]
+
+        [DataMember(Name="places")]
+        public List<PlaceDTO> Places { get; set; }
+
+        /// <summary>
+        /// Gets or Sets PlaceSchema
+        /// </summary>
+
+        [DataMember(Name="placeSchema")]
+        public string PlaceSchema { get; set; }
+
+        /// <summary>
         /// Returns the string presentation of the object
         /// </summary>
         /// <returns>String presentation of the object</returns>
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("class ModelEvent {\n");
+            sb.Append("class EventWithPlaces {\n");
             sb.Append("  Id: ").Append(Id).Append("\n");
             sb.Append("  Title: ").Append(Title).Append("\n");
             sb.Append("  StartTime: ").Append(StartTime).Append("\n");
@@ -133,6 +148,8 @@ namespace biletmajster_backend.Domain.DTOS
             sb.Append("  Categories: ").Append(Categories).Append("\n");
             sb.Append("  FreePlace: ").Append(FreePlace).Append("\n");
             sb.Append("  MaxPlace: ").Append(MaxPlace).Append("\n");
+            sb.Append("  Places: ").Append(Places).Append("\n");
+            sb.Append("  PlaceSchema: ").Append(PlaceSchema).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -155,15 +172,15 @@ namespace biletmajster_backend.Domain.DTOS
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((ModelEventDTO)obj);
+            return obj.GetType() == GetType() && Equals((EventWithPlacesDTO)obj);
         }
 
         /// <summary>
-        /// Returns true if ModelEvent instances are equal
+        /// Returns true if EventWithPlaces instances are equal
         /// </summary>
-        /// <param name="other">Instance of ModelEvent to be compared</param>
+        /// <param name="other">Instance of EventWithPlaces to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals(ModelEventDTO other)
+        public bool Equals(EventWithPlacesDTO other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -223,6 +240,16 @@ namespace biletmajster_backend.Domain.DTOS
                     MaxPlace == other.MaxPlace ||
                     MaxPlace != null &&
                     MaxPlace.Equals(other.MaxPlace)
+                ) && 
+                (
+                    Places == other.Places ||
+                    Places != null &&
+                    Places.SequenceEqual(other.Places)
+                ) && 
+                (
+                    PlaceSchema == other.PlaceSchema ||
+                    PlaceSchema != null &&
+                    PlaceSchema.Equals(other.PlaceSchema)
                 );
         }
 
@@ -258,6 +285,10 @@ namespace biletmajster_backend.Domain.DTOS
                     hashCode = hashCode * 59 + FreePlace.GetHashCode();
                     if (MaxPlace != null)
                     hashCode = hashCode * 59 + MaxPlace.GetHashCode();
+                    if (Places != null)
+                    hashCode = hashCode * 59 + Places.GetHashCode();
+                    if (PlaceSchema != null)
+                    hashCode = hashCode * 59 + PlaceSchema.GetHashCode();
                 return hashCode;
             }
         }
@@ -265,12 +296,12 @@ namespace biletmajster_backend.Domain.DTOS
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(ModelEventDTO left, ModelEventDTO right)
+        public static bool operator ==(EventWithPlacesDTO left, EventWithPlacesDTO right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(ModelEventDTO left, ModelEventDTO right)
+        public static bool operator !=(EventWithPlacesDTO left, EventWithPlacesDTO right)
         {
             return !Equals(left, right);
         }
