@@ -13,7 +13,8 @@ public class Place
     public bool Free { get; set; }
     public ModelEvent Event { get; set; }
     public Place() { }
-    public Place(ModelEvent modelEvent, long SeatNr){
+    public Place(ModelEvent modelEvent, long SeatNr)
+    {
         this.Event = modelEvent;
         SeatNumber = SeatNr;
     }
