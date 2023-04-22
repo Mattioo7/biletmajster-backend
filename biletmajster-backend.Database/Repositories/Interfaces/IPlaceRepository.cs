@@ -4,8 +4,8 @@ namespace biletmajster_backend.Database.Repositories.Interfaces
 {
     public interface IPlaceRepository
     {
-        public Task<bool> AddPlace(Place place);
-        public Task<bool> RemovePlace(Place place);
-        public Task<bool> SaveChanges();
+        public Task<bool> AddPlaceAsync(Place place);
+        public Task<bool> RemovePlaceAsync(Place place);
+        public Task<bool> SaveChangesAsync();
     }
 }

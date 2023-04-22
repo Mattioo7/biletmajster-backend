@@ -6,13 +6,11 @@ namespace biletmajster_backend.Database.Repositories.Interfaces
     public interface IModelEventRepository
     {
         //GET:
-        public Task<ModelEvent> GetEventById(long id);
-        public Task<List<ModelEvent>> GetAllEvents();
-        
-        public Task<bool> DeleteEvent(long id);
-        public Task<bool> PatchEvent(ModelEvent body, List<Place> place); 
-        public Task<bool> AddEvent(ModelEvent _event);
-        
-        public Task<bool> SaveChanges();
+        public Task<ModelEvent> GetEventByIdAsync(long id);
+        public Task<List<ModelEvent>> GetAllEventsAsync();
+        public Task<bool> PatchEventAsync(ModelEvent body, List<Place> place);
+        public Task<bool> DeleteEventAsync(long id);
+        public Task<bool> AddEventAsync(ModelEvent _event);
+        public Task<bool> SaveChangesAsync();
     }
 }
