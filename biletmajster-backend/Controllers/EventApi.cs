@@ -84,6 +84,7 @@ namespace biletmajster_backend.Controllers
                 Title = title,
                 Name = name,
                 FreePlace = freePlace,
+                MaxPlace = freePlace,
                 StartTime = startTime,
                 EndTime = endTime,
                 Latitude = latitude,
@@ -133,7 +134,7 @@ namespace biletmajster_backend.Controllers
 
             if (await _modelEventRepository.AddEvent(databaseEvent))
             {
-                return Ok("Successfully created");
+                return new ObjectResult(_mapper.Map<ModelEventDTO>(databaseEvent));
             }
             else
             {
@@ -284,7 +285,6 @@ namespace biletmajster_backend.Controllers
         {
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
-
             var EventToUpdate = await _modelEventRepository.GetEventById(long.Parse(id));
             if (EventToUpdate == null)
             {
@@ -298,11 +298,11 @@ namespace biletmajster_backend.Controllers
             {
                 return BadRequest(new ErrorResponse { Message = "Event has just started, you can not edit ongoing events" });
             }
-            if (EventToUpdate.FreePlace != body.FreePlace)
+            List<Place> places = new List<Place>();
+            if (EventToUpdate.GetFreePlaces().Count < body.FreePlace)
             {
-                EventToUpdate.Places.Clear();
-                //List<Database.Entities.Place> places = new List<Database.Entities.Place>();
-                for (int i = 0; i < body.FreePlace; i++)
+                int idx = EventToUpdate.Places.Count;
+                for (int i = idx; i < body.FreePlace; i++)
                 {
                     var place = new Database.Entities.Place()
                     {
@@ -310,36 +310,34 @@ namespace biletmajster_backend.Controllers
                         SeatNumber = i + 1,
                         Event = EventToUpdate
                     };
-                    EventToUpdate.Places.Add(place);
+                    places.Add(place);
                 }
             }
-            if (body.Categories != null)
+            List<Database.Entities.Category> categoriesList = new List<Database.Entities.Category>();
+            foreach (var category in EventToUpdate.Categories)
             {
-                List<Database.Entities.Category> categoriesList = new List<Database.Entities.Category>();
-                foreach (var category in EventToUpdate.Categories)
-                {
-                    category.Events.Remove(EventToUpdate);
-                    categoriesList.Add(category);
-                }
-                
-                EventToUpdate.Categories.Clear();
-                
-                await _categoriesRepository.UpdateCategories(categoriesList);
-
+                category.Events.Remove(EventToUpdate);
+                categoriesList.Add(category);
+            }
+            EventToUpdate.Categories.Clear();
+            await _categoriesRepository.UpdateCategories(categoriesList);
+            if (body.Categories.Count != 0)
+            {
                 foreach (var category in body.Categories)
                 {
                     var currCategory = await _categoriesRepository.GetCategoryById((long)category.Id);
                     if (currCategory == null)
                     {
-                        return NotFound(new ErrorResponse { Message = $"Category with id: {long.Parse(id)} not found" });
+                        return NotFound(new ErrorResponse { Message = $"Category with id: {category.Id} not found" });
                     }
                     categoriesList.Add(currCategory);
                     currCategory.Events.Add(EventToUpdate);
                     EventToUpdate.Categories.Add(currCategory);
                 }
-                await _modelEventRepository.PatchEvent(EventToUpdate);
             }
-            return Ok();
+            EventToUpdate.UpdateData(_mapper.Map<ModelEvent>(body));
+            await _modelEventRepository.PatchEvent(EventToUpdate, places);
+            return new ObjectResult(_mapper.Map<ModelEventDTO>(EventToUpdate));
         }
     }
 }

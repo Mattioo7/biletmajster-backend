@@ -14,10 +14,10 @@ namespace biletmajster_backend.Database.Repositories
         {
             await mDbContext.Places.AddRangeAsync(_event.Places);
             // TODO: Use ICategoryInterface to update!
-            
+
             mDbContext.Categories.UpdateRange(_event.Categories);
             mDbContext.Organizers.Update(_event.Organizer);
-            
+
             await DbSet.AddAsync(_event);
             return await SaveChanges();
         }
@@ -29,12 +29,12 @@ namespace biletmajster_backend.Database.Repositories
 
         public async Task<ModelEvent> GetEventById(long id)
         {
-            return await DbSet.FindAsync(id);
+            return await DbSet.Include(c => c.Categories).Include(p => p.Places).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<List<ModelEvent>> GetAllEvents()
         {
-            return await DbSet.ToListAsync();
+            return await DbSet.Include(c => c.Categories).Include(p => p.Places).ToListAsync();
         }
 
         public async Task<bool> DeleteEvent(long id)
@@ -42,16 +42,17 @@ namespace biletmajster_backend.Database.Repositories
             var Event = await GetEventById(id);
             if (Event != null)
                 DbSet.Remove(Event);
-            else 
+            else
                 return false;
             return await SaveChanges();
         }
 
-        public async Task<bool> PatchEvent(ModelEvent body)
+        public async Task<bool> PatchEvent(ModelEvent body, List<Place> place)
         {
-            await mDbContext.Places.AddRangeAsync(body.Places);
+            if (place.Count > 0)
+                await mDbContext.Places.AddRangeAsync(place);
+
             mDbContext.Categories.UpdateRange(body.Categories);
-            
             DbSet.Update(body);
             return await SaveChanges();
         }
