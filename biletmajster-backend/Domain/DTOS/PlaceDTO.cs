@@ -78,11 +78,7 @@ namespace biletmajster_backend.Domain.DTOS
 
         [DataMember(Name = "SeatNumber")]
         public long SeatNumber { get; set; }
-
-        public PlaceDTO(long SeatNr)
-        {
-            SeatNumber = SeatNr;
-        }
+        
 
         public bool Equals(PlaceDTO other)
         {
