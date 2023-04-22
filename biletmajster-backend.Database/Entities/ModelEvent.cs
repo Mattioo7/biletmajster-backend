@@ -1,6 +1,7 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace biletmajster_backend.Database.Entities;
 
@@ -26,5 +27,14 @@ public class ModelEvent
     {
         this.Categories = new List<Category>();
         this.Places = new List<Place>();
+    }
+    public void UpdateData(ModelEvent e)
+    {
+        this.FreePlace = e.FreePlace;
+        this.StartTime= e.StartTime;
+        this.Title= e.Title;
+        this.Name= e.Name;
+        this.EndTime = e.EndTime;
+        this.PlaceSchema= e.PlaceSchema;
     }
 }
