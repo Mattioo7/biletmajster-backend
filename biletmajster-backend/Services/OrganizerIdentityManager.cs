@@ -37,22 +37,18 @@ public class OrganizerIdentityManager : IOrganizerIdentityManager
         return await _organizersRepository.CreateOrganizerAsync(name, email, passwordHash, passwordSalt);
     }
 
-    public async Task<Organizer> PatchOrganizerAsync(OrganizerDTO newOrganizer)
+    public async Task<Organizer> PatchOrganizerAsync(long organizerId, OrganizerPatchDTO newOrganizer)
     {
-        _logger.LogDebug($"Patching organizer {newOrganizer.Name} with email {newOrganizer.Email}");
+        _logger.LogDebug($"Patching organizer {newOrganizer.Name}");
         
         CreatePasswordHash(newOrganizer.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-        var organizerToUpdate = new Organizer
-        {
-            Id = newOrganizer.Id.Value,
-            Name = newOrganizer.Name,
-            Email = newOrganizer.Email,
-            PasswordHash = passwordHash,
-            PasswordSalt = passwordSalt,
-            Events = newOrganizer.Events.Select(e => _mapper.Map<ModelEvent>(e)).ToList()
-        };
+        var organizerToUpdate = await _organizersRepository.GetOrganizerByIdAsync(organizerId);
         
+        organizerToUpdate.Name = newOrganizer.Name;
+        organizerToUpdate.PasswordHash = passwordHash;
+        organizerToUpdate.PasswordSalt = passwordSalt;
+
         return _organizersRepository.UpdateOrganizer(organizerToUpdate);
     }
 

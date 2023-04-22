@@ -43,13 +43,20 @@ namespace biletmajster_backend.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Create new category
+        /// </summary>
+        /// <param name="categoryName">name of category</param>
+        /// <response code="201">created</response>
+        /// <response code="400">category already exist</response>
+        /// <response code="403">invalid session</response>
         [HttpPost]
-        [Route("/api/v3/categories")]
-        [ValidateModelState]
+        [Route("/categories")]
         [Authorize]
+        [ValidateModelState]
         [SwaggerOperation("AddCategories")]
         [SwaggerResponse(statusCode: 201, type: typeof(CategoryDTO), description: "created")]
-        public virtual async Task<IActionResult> AddCategories([FromQuery] [Required()] string categoryName)
+        public virtual async Task<IActionResult> AddCategories([FromHeader][Required]string categoryName)
         {
             _logger.LogDebug($"Add Category with name: {categoryName}");
 
@@ -84,7 +91,7 @@ namespace biletmajster_backend.Controllers
         /// </summary>
         /// <response code="200">successful operation</response>
         [HttpGet]
-        [Route("/api/v3/categories")]
+        [Route("/categories")]
         [ValidateModelState]
         [SwaggerOperation("GetCategories")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<CategoryDTO>), description: "successful operation")]
