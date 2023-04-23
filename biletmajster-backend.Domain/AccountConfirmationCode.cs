@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace biletmajster_backend.Database.Entities;
+namespace biletmajster_backend.Domain;
 
 public class AccountConfirmationCode
 {
