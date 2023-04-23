@@ -49,7 +49,7 @@ public class OrganizerIdentityManager : IOrganizerIdentityManager
         organizerToUpdate.PasswordHash = passwordHash;
         organizerToUpdate.PasswordSalt = passwordSalt;
 
-        return _organizersRepository.UpdateOrganizer(organizerToUpdate);
+        return await _organizersRepository.UpdateOrganizer(organizerToUpdate);
     }
 
     public async Task<string> LoginAsync(string email, string password)
