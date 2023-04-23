@@ -67,8 +67,6 @@ namespace biletmajster_backend.Controllers
             //Event Model:
 
             var databaseEvent = _mapper.Map<ModelEvent>(body);
-
-
             // Places List: (Database)
             // Handling Places
             List<Database.Entities.Place> places = new List<Database.Entities.Place>();
@@ -111,7 +109,7 @@ namespace biletmajster_backend.Controllers
 
             if (await _modelEventRepository.AddEventAsync(databaseEvent))
             {
-                return new ObjectResult(_mapper.Map<ModelEventDTO>(databaseEvent));
+                return new ObjectResult(_mapper.Map<EventWithPlacesDTO>(databaseEvent));
             }
             else
             {

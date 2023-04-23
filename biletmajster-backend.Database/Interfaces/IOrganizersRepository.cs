@@ -12,5 +12,5 @@ public interface IOrganizersRepository
     public Task DeleteOrganizerByIdAsync(long id);
 
     public Task SaveChangesAsync();
-    public Organizer UpdateOrganizer(Organizer organizerToUpdate);
+    public Task<Organizer> UpdateOrganizer(Organizer organizerToUpdate);
 }

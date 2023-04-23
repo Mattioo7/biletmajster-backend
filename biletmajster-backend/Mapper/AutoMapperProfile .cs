@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using biletmajster_backend.Contracts;
 using biletmajster_backend.Database.Entities;
+//using biletmajster_backend.Domain;
 
 namespace biletmajster_backend.Mapper
 {
@@ -10,7 +11,8 @@ namespace biletmajster_backend.Mapper
         public AutoMapperProfile()
         {
             CreateMap<ModelEventDTO, Database.Entities.ModelEvent>();
-            CreateMap<Database.Entities.ModelEvent, ModelEventDTO>();
+            CreateMap<Database.Entities.ModelEvent, ModelEventDTO>()
+                .ForMember(dest => dest.FreePlace,opt =>opt.MapFrom(src=>src.MaxPlace));
 
             CreateMap<CategoryDTO, Database.Entities.Category>();
             CreateMap<Database.Entities.Category, CategoryDTO>();
@@ -29,6 +31,11 @@ namespace biletmajster_backend.Mapper
             CreateMap<Database.Entities.Place, PlaceDTO>();
 
             CreateMap<EventFormDTO, ModelEvent>();
+
+            CreateMap<Database.Entities.ModelEvent, EventWithPlacesDTO>();
+
+            CreateMap<Database.Entities.ModelEvent, EventPatchDTO>();
+            CreateMap<EventPatchDTO,Database.Entities.ModelEvent>();
         }
     }
 }
