@@ -30,6 +30,14 @@ jobs:
           dotnet tool install --global dotnet-ef
           dotnet tool restore
           dotnet ef database update
+        env: |
+          Mail__Port: 1
+          Mail__Host: 127.0.0.1
+          Mail__UseSsl: false
+          Mail__User: user
+          Mail__Password: password
+          Mail__Sender: sender
+          Mail__SenderMail: sendermail
         working-directory: biletmajster-backend
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
