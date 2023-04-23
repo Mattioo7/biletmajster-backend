@@ -30,7 +30,7 @@ jobs:
           dotnet tool install --global dotnet-ef
           dotnet tool restore
           dotnet ef database update
-        env: |
+        env:
           Mail__Port: 1
           Mail__Host: 127.0.0.1
           Mail__UseSsl: false
