@@ -15,7 +15,7 @@ public class ModelEvent
     public string Latitude { get; set; }
     public string Longitude { get; set; }
     public string Name { get; set; }
-    public string PlaceSchema { get; set; }
+    public string? PlaceSchema { get; set; }
     public EventStatus Status { get; set; }
     public ICollection<Category> Categories { get; set; }
     public long FreePlace { get; set; }

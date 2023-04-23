@@ -74,7 +74,7 @@ namespace biletmajster_backend.Contracts
         /// </summary>
 
         [DataMember(Name="placeSchema")]
-        public string PlaceSchema { get; set; }
+        public string? PlaceSchema { get; set; }
 
         /// <summary>
         /// Gets or Sets MaxPlace
