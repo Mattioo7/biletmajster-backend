@@ -10,8 +10,9 @@ namespace biletmajster_backend.Mapper
         public AutoMapperProfile()
         {
             CreateMap<ModelEventDTO, ModelEvent>();
-            CreateMap<ModelEvent, ModelEventDTO>()
-                .ForMember(dest => dest.FreePlace, opt => opt.MapFrom(src => src.MaxPlace));
+            CreateMap<ModelEvent, ModelEventDTO>();
+            CreateMap<EventFormDTO, ModelEvent>()
+                .ForMember(dest => dest.FreePlace, opt =>opt.MapFrom(src=>src.MaxPlace));
 
             CreateMap<EventFormDTO, ModelEvent>()
                 .ForMember(destination => destination.FreePlace, m => m.MapFrom(source => source.MaxPlace));
