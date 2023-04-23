@@ -11,7 +11,7 @@
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace biletmajster_backend.Domain.DTOS
+namespace biletmajster_backend.Contracts
 { 
         /// <summary>
         /// event status

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using biletmajster_backend.Database.Entities;
-using biletmajster_backend.Database.Repositories.Interfaces;
-using biletmajster_backend.Domain.DTOS;
+using biletmajster_backend.Database.Interfaces;
 using biletmajster_backend.Services;
 using Microsoft.Extensions.Logging;
 using Moq;

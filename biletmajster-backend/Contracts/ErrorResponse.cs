@@ -1,4 +1,4 @@
-namespace biletmajster_backend.Domain.Errors;
+namespace biletmajster_backend.Contracts;
 
 public class ErrorResponse
 {

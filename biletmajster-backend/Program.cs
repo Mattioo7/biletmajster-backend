@@ -4,9 +4,9 @@
 using System.Text;
 using biletmajster_backend.Database;
 using biletmajster_backend.Database.Repositories;
-using biletmajster_backend.Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using biletmajster_backend.Configurations;
+using biletmajster_backend.Database.Interfaces;
 using biletmajster_backend.Interfaces;
 using biletmajster_backend.Jwt;
 using biletmajster_backend.Services;
