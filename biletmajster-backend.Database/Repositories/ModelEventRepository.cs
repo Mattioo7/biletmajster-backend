@@ -7,7 +7,10 @@ namespace biletmajster_backend.Database.Repositories
     public class ModelEventRepository : BaseRepository<ModelEvent>, IModelEventRepository
     {
         protected override DbSet<ModelEvent> DbSet => mDbContext.ModelEvents;
-        public ModelEventRepository(ApplicationDbContext dbContext) : base(dbContext) { }
+
+        public ModelEventRepository(ApplicationDbContext dbContext) : base(dbContext)
+        {
+        }
 
         //Interface Implementation
         public async Task<bool> AddEventAsync(ModelEvent _event)
@@ -21,10 +24,21 @@ namespace biletmajster_backend.Database.Repositories
             await DbSet.AddAsync(_event);
             return await SaveChangesAsync();
         }
+
         public async Task<bool> SaveChangesAsync()
         {
             var saved = await mDbContext.SaveChangesAsync();
             return saved > 0;
+        }
+
+        public Task<List<ModelEvent>> GetEventsByOrganizerIdAsync(long organizerId)
+        {
+            return DbSet.Where(x => x.Organizer.Id == organizerId).ToListAsync();
+        }
+
+        public Task<List<ModelEvent>> GetEventsByCategoryAsync(long categoryId)
+        {
+            return DbSet.Where(x => x.Categories.Any(c => c.Id == categoryId)).ToListAsync();
         }
 
         public async Task<ModelEvent> GetEventByIdAsync(long id)

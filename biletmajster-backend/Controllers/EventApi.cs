@@ -27,7 +27,6 @@ namespace biletmajster_backend.Controllers
     /// 
     /// </summary>
     [ApiController]
-
     public class EventApiController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -37,9 +36,10 @@ namespace biletmajster_backend.Controllers
         private readonly IOrganizersRepository _organizersRepository;
         private readonly ILogger<EventApiController> _logger;
 
-        public EventApiController(IMapper mapper, IModelEventRepository modelEventRepository, ICategoriesRepository categoriesRepository,
+        public EventApiController(IMapper mapper, IModelEventRepository modelEventRepository,
+            ICategoriesRepository categoriesRepository,
             IPlaceRepository placeRepository, ILogger<EventApiController>
-            logger, IOrganizersRepository organizersRepository)
+                logger, IOrganizersRepository organizersRepository)
         {
             _mapper = mapper;
             _modelEventRepository = modelEventRepository;
@@ -62,11 +62,11 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("AddEvent")]
         [SwaggerResponse(statusCode: 201, type: typeof(ModelEventDTO), description: "event created")]
-        public virtual async Task<IActionResult> AddEvent([FromBody]EventFormDTO body)
+        public virtual async Task<IActionResult> AddEvent([FromBody] EventFormDTO body)
         {
             _logger.LogDebug($"Add event with name: {body.Name}");
             //Event Model:
-           
+
             var databaseEvent = _mapper.Map<ModelEvent>(body);
 
 
@@ -97,9 +97,11 @@ namespace biletmajster_backend.Controllers
                     _logger.LogDebug($"Category with id: {id} can not be found");
                     return BadRequest(ModelState);
                 }
+
                 categoriesList.Add(category);
                 category.Events.Add(databaseEvent);
             }
+
             databaseEvent.Categories = categoriesList;
             databaseEvent.Places = places;
 
@@ -132,13 +134,14 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("CancelEvent")]
-        public virtual async Task<IActionResult> CancelEvent([FromRoute][Required]string id)
+        public virtual async Task<IActionResult> CancelEvent([FromRoute] [Required] string id)
         {
             _logger.LogDebug($"Delete event with id: {id}");
             if (await _modelEventRepository.DeleteEventAsync(long.Parse(id)))
             {
                 return Ok();
             }
+
             return NotFound(new ErrorResponse { Message = "Event not found" });
         }
 
@@ -153,20 +156,10 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetByCategory")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
-        public virtual async Task<IActionResult> GetByCategory([FromHeader][Required]long? categoryId)
+        public virtual async Task<IActionResult> GetByCategory([FromHeader] [Required] long? categoryId)
         {
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(List<ModelEvent>));
-
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400);
-            string exampleJson = null;
-            exampleJson = "[ {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}, {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n} ]";
-
-            var example = exampleJson != null
-            ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
-            : default(List<ModelEvent>);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            var events = await _modelEventRepository.GetEventsByCategoryAsync(categoryId.Value);
+            return Ok(_mapper.Map<List<ModelEventDTO>>(events));
         }
 
         /// <summary>
@@ -182,23 +175,16 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetEventById")]
         [SwaggerResponse(statusCode: 200, type: typeof(EventWithPlacesDTO), description: "successful operation")]
-        public virtual IActionResult GetEventById([FromRoute][Required]long? id)
+        public virtual async Task<IActionResult> GetEventById([FromRoute] [Required] long? id)
         {
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(ModelEvent));
+            var @event = await _modelEventRepository.GetEventByIdAsync(id.Value);
 
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400);
+            if (@event == null)
+            {
+                return NotFound(new ErrorResponse { Message = "Event not found" });
+            }
 
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
-            string exampleJson = null;
-            exampleJson = "{\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}";
-
-            var example = exampleJson != null
-            ? JsonConvert.DeserializeObject<ModelEvent>(exampleJson)
-            : default(ModelEvent);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            return Ok(_mapper.Map<EventWithPlacesDTO>(@event));
         }
 
         /// <summary>
@@ -210,17 +196,11 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetEvents")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
-        public virtual IActionResult GetEvents()
+        public virtual async Task<IActionResult> GetEvents()
         {
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(List<ModelEvent>));
-            string exampleJson = null;
-            exampleJson = "[ {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}, {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n} ]";
+            var events = await _modelEventRepository.GetAllEventsAsync();
 
-            var example = exampleJson != null
-            ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
-            : default(List<ModelEvent>);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            return Ok(events.Select(e => _mapper.Map<ModelEventDTO>(e)).ToList());
         }
 
         /// <summary>
@@ -234,17 +214,12 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetMyEvents")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
-        public virtual IActionResult GetMyEvents()
+        public virtual async Task<IActionResult> GetMyEvents()
         {
-            //TODO: Uncomment the next line to return response 200 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(200, default(List<ModelEvent>));
-            string exampleJson = null;
-            exampleJson = "[ {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n}, {\n  \"latitude\" : \"40.4775315\",\n  \"freePlace\" : 2,\n  \"title\" : \"Short description of Event\",\n  \"placeSchema\" : \"Seralized place schema\",\n  \"places\" : [ {\n    \"id\" : 21,\n    \"free\" : true\n  }, {\n    \"id\" : 21,\n    \"free\" : true\n  } ],\n  \"name\" : \"Long description of Event\",\n  \"startTime\" : 1673034164,\n  \"id\" : 10,\n  \"endTime\" : 1683034164,\n  \"categories\" : [ {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  }, {\n    \"name\" : \"Sport\",\n    \"id\" : 1\n  } ],\n  \"longitude\" : \"-3.7051359\",\n  \"status\" : \"done\",\n  \"maxPlace\" : 100\n} ]";
-
-            var example = exampleJson != null
-            ? JsonConvert.DeserializeObject<List<ModelEvent>>(exampleJson)
-            : default(List<ModelEvent>);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
+            var events = await _modelEventRepository.GetEventsByOrganizerIdAsync(organizer.Id);
+            return Ok(events.Select(e => _mapper.Map<ModelEventDTO>(e)).ToList());
         }
 
         /// <summary>
@@ -262,7 +237,8 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchEvent")]
-        public virtual async Task<IActionResult> PatchEvent([FromRoute][Required]string id, [FromBody]EventPatchDTO body)
+        public virtual async Task<IActionResult> PatchEvent([FromRoute] [Required] string id,
+            [FromBody] EventPatchDTO body)
         {
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
@@ -271,14 +247,19 @@ namespace biletmajster_backend.Controllers
             {
                 return NotFound(new ErrorResponse { Message = $"Event with id: {long.Parse(id)} not found" });
             }
+
             if (EventToUpdate.Organizer.Id != organizer.Id)
             {
-                return BadRequest(new ErrorResponse { Message = $"Event with id: {long.Parse(id)} does not belong to you" });
+                return BadRequest(new ErrorResponse
+                    { Message = $"Event with id: {long.Parse(id)} does not belong to you" });
             }
+
             if (EventToUpdate.Status != EventStatus.InFuture)
             {
-                return BadRequest(new ErrorResponse { Message = "Event has just started, you can not edit ongoing events" });
+                return BadRequest(new ErrorResponse
+                    { Message = "Event has just started, you can not edit ongoing events" });
             }
+
             List<Place> places = new List<Place>();
             if (EventToUpdate.GetFreePlaces().Count < body.MaxPlace)
             {
@@ -294,12 +275,14 @@ namespace biletmajster_backend.Controllers
                     places.Add(place);
                 }
             }
+
             List<Database.Entities.Category> categoriesList = new List<Database.Entities.Category>();
             foreach (var category in EventToUpdate.Categories)
             {
                 category.Events.Remove(EventToUpdate);
                 categoriesList.Add(category);
             }
+
             EventToUpdate.Categories.Clear();
             await _categoriesRepository.UpdateCategoriesAsync(categoriesList);
             if (body.CategoriesIds.Count != 0)
@@ -311,11 +294,13 @@ namespace biletmajster_backend.Controllers
                     {
                         return NotFound(new ErrorResponse { Message = $"Category with id: {categoryId} not found" });
                     }
+
                     categoriesList.Add(currCategory);
                     currCategory.Events.Add(EventToUpdate);
                     EventToUpdate.Categories.Add(currCategory);
                 }
             }
+
             EventToUpdate.UpdateData(_mapper.Map<ModelEvent>(body));
             await _modelEventRepository.PatchEventAsync(EventToUpdate, places);
             return new ObjectResult(_mapper.Map<ModelEventDTO>(EventToUpdate));
