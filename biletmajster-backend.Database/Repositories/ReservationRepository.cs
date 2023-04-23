@@ -11,18 +11,21 @@ public class ReservationRepository : BaseRepository<Reservation>, IReservationRe
     }
 
     protected override DbSet<Reservation> DbSet => mDbContext.Reservations;
+
     public async Task<Reservation> AddReservationAsync(Reservation reservation)
     {
         var entry = await DbSet.AddAsync(reservation);
 
         await SaveChangesAsync();
-        
+
         return entry.Entity;
     }
 
     public Task<Reservation> FindByReservationTokenAsync(string reservationToken)
     {
-        return DbSet.FirstOrDefaultAsync(r => r.ReservationToken == reservationToken);
+        return DbSet.Include(r => r.Event)
+            .Include(r => r.Place)
+            .FirstOrDefaultAsync(r => r.ReservationToken == reservationToken);
     }
 
     public async Task DeleteReservationAsync(Reservation reservation)
