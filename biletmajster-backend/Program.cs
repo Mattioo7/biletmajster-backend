@@ -4,19 +4,14 @@
 using System.Text;
 using biletmajster_backend.Database;
 using biletmajster_backend.Database.Repositories;
-using biletmajster_backend.Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-
-using Backend.Configurations;
-using Backend.Interfaces;
-using Backend.Services;
+using biletmajster_backend.Configurations;
+using biletmajster_backend.Database.Interfaces;
 using biletmajster_backend.Interfaces;
+using biletmajster_backend.Jwt;
 using biletmajster_backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-
-using Microsoft.EntityFrameworkCore.Query;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -37,6 +32,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = configuration["Jwt:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Token"]))
         };
+
+        // for mapping custom sessionToken to Bearer token
+        options.Events = JwtAuthEventsHandler.Instance;
     });
 
 services.AddLogging();
@@ -49,7 +47,7 @@ builder.Services.AddSingleton(
 // Scoped
 builder.Services.AddScoped<ICustomMailService, MailService>();
 
-services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b=> b.MigrationsAssembly("biletmajster-backend")));
+services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("biletmajster-backend")));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(configuration.GetConnectionString("LocalApi"), builder =>
@@ -63,7 +61,10 @@ services.AddScoped<IAccountConfirmationCodeRepository, AccountConfirmationCodeRe
 services.AddScoped<IOrganizersRepository, OrganizersRepository>();
 services.AddScoped<IConfirmationService, ConfirmationService>();
 services.AddScoped<IOrganizerIdentityManager, OrganizerIdentityManager>();
+services.AddScoped<IPlaceRepository, PlaceRepository>();
 services.AddScoped<IPlaceRepository,PlaceRepository>();
+services.AddScoped<IReservationRepository,ReservationRepository>();
+services.AddScoped<IReservationService,ReservationService>();
 
 // Data Base Section:
 
@@ -77,7 +78,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
-        policy.SetIsOriginAllowed(host => host.StartsWith(builder.Configuration["FrontendUrl"]!))
+        policy.SetIsOriginAllowed(host => true)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();

@@ -1,6 +1,6 @@
-using Backend.Interfaces;
-using biletmajster_backend.Database.Entities;
-using biletmajster_backend.Database.Repositories.Interfaces;
+using biletmajster_backend.Interfaces;
+using biletmajster_backend.Domain;
+using biletmajster_backend.Database.Interfaces;
 
 namespace biletmajster_backend.Services;
 
@@ -12,16 +12,20 @@ public class ConfirmationService : IConfirmationService
     private readonly ICustomMailService _mailService;
     private readonly IOrganizersRepository _organizersRepository;
     private readonly IAccountConfirmationCodeRepository _accountConfirmationCodeRepository;
+    private readonly ILogger<ConfirmationService> _logger;
     
-    public ConfirmationService(ICustomMailService mailService, IOrganizersRepository organizersRepository, IAccountConfirmationCodeRepository accountConfirmationCodeRepository)
+    public ConfirmationService(ICustomMailService mailService, IOrganizersRepository organizersRepository, IAccountConfirmationCodeRepository accountConfirmationCodeRepository, ILogger<ConfirmationService> logger)
     {
         _mailService = mailService;
         _organizersRepository = organizersRepository;
         _accountConfirmationCodeRepository = accountConfirmationCodeRepository;
+        _logger = logger;
     }
 
     public async Task SendConfirmationRequestAsync(Organizer organizer)
     {
+        _logger.LogDebug($"Sending email with confirmation code to {organizer.Email}");
+        
         // generate code
         var code = GenerateConfirmationCode();
         
@@ -36,6 +40,8 @@ public class ConfirmationService : IConfirmationService
 
     public async Task<string> GetConfirmationCodeAsync(Organizer organizer)
     {
+        _logger.LogDebug($"Confirmation codes for organizer {organizer.Email} requested");
+        
         var codes =  await _accountConfirmationCodeRepository.GetConfirmationCodesForOrganizerAsync(organizer);
         
         var code = codes.MaxBy(x => x.CreatedAt);

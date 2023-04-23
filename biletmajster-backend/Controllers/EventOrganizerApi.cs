@@ -11,13 +11,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using AutoMapper;
-using Backend.Interfaces;
-using biletmajster_backend.Attributes;
-using biletmajster_backend.Database.Entities;
-using biletmajster_backend.Database.Repositories.Interfaces;
-using biletmajster_backend.Domain.DTOS;
-using biletmajster_backend.Domain.Errors;
 using biletmajster_backend.Interfaces;
+using biletmajster_backend.Attributes;
+using biletmajster_backend.Contracts;
+using biletmajster_backend.Domain;
+using biletmajster_backend.Database.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -52,37 +50,42 @@ namespace biletmajster_backend.Controllers
         /// </summary>
         /// <param name="id">id of Organizer</param>
         /// <param name="code">code from email</param>
-        /// <response code="201">account confirmed</response>
+        /// <response code="200">nothing to do, account already confirmed</response>
+        /// <response code="202">account confirmed</response>
         /// <response code="400">code wrong</response>
+        /// <response code="404">organizer id not found</response>
         [HttpPost]
-        [Route("/api/v3/organizer/{id}")]
+        [Route("/organizer/{id}")]
         [ValidateModelState]
         [SwaggerOperation("Confirm")]
-        [SwaggerResponse(statusCode: 201, type: typeof(OrganizerDTO), description: "account confirmed")]
-        public virtual async Task<IActionResult> Confirm([FromRoute] [Required] long id,
-            [FromQuery] [Required] string code)
+        public virtual async Task<IActionResult> Confirm([FromRoute][Required]long id, [FromHeader][Required]string code)
         {
+            _logger.LogDebug($"Confirmation request from organizer with id: {id}, code: {code}");
+
             var organizer = await _organizersRepository.GetOrganizerByIdAsync(id);
             if (organizer == null)
             {
-                return NotFound(new ErrorResponse { Message = "Organizer not found" });
+                _logger.LogDebug($"Cannot find organizer with id: {id}");
+                return StatusCode(400, new ErrorResponse { Message = "Organizer not found" });
             }
 
             if (organizer.Status != OrganizerAccountStatus.PendingForConfirmation)
             {
-                return BadRequest(new ErrorResponse { Message = "Organizer account is not pending for confirmation" });
+                _logger.LogDebug($"Invalid status of organizer with id: {id}, status: {organizer.Status.ToString()}");
+                return StatusCode(400, new ErrorResponse { Message = "Organizer account is not pending for confirmation" });
             }
 
             var expectedCode = await _confirmationService.GetConfirmationCodeAsync(organizer);
 
             if (expectedCode != code)
             {
-                return BadRequest(new ErrorResponse { Message = "Confirmation code is wrong" });
+                _logger.LogDebug($"Invalid confirmation code for organizer with id: {id}");
+                return StatusCode(400,new ErrorResponse { Message = "Confirmation code is wrong" });
             }
 
             await _organizersRepository.UpdateOrganizerAccountStatusAsync(organizer, OrganizerAccountStatus.Confirmed);
 
-            return Ok(_mapper.Map<OrganizerDTO>(organizer));
+            return StatusCode(201,_mapper.Map<OrganizerDTO>(organizer));
         }
 
         /// <summary>
@@ -90,32 +93,47 @@ namespace biletmajster_backend.Controllers
         /// </summary>
         /// <param name="id">id of Organizer</param>
         /// <response code="204">deleted</response>
+        /// <response code="403">invalid session</response>
         /// <response code="404">id not found</response>
         [HttpDelete]
-        [Route("/api/v3/organizer/{id}")]
+        [Route("/organizer/{id}")]
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("DeleteOrganizer")]
-        public virtual async Task<IActionResult> DeleteOrganizer([FromRoute] [Required] long id)
+        public virtual async Task<IActionResult> DeleteOrganizer([FromRoute][Required]long id)
         {
+            _logger.LogDebug($"Delete organizer request with id: {id}");
+
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+
             if (email == null)
             {
-                return BadRequest(new ErrorResponse { Message = "Invalid session" });
+                return StatusCode(404, new ErrorResponse { Message = "Invalid session" });
+            }
+
+            // check if organizer wants to delete himself
+            var originOrganizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
+            if (originOrganizer == null)
+            {
+                return StatusCode(404, new ErrorResponse { Message = "Organizer not found" });
+            }
+
+            if (originOrganizer.Id != id)
+            {
+                return StatusCode(404, new ErrorResponse { Message = "You cannot delete other organizer" });
             }
 
             await _organizersRepository.DeleteOrganizerByIdAsync(id);
-            return Ok();
+            return StatusCode(204);
         }
 
         /// <summary>
         /// Get organizer account (my account)
         /// </summary>
         /// <response code="200">successful operation</response>
-        /// <response code="400">invalid session</response>
+        /// <response code="403">invalid session</response>
         [HttpGet]
-        [Route("/api/v3/organizer")]
+        [Route("/organizer")]
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("GetOrganizer")]
@@ -126,12 +144,14 @@ namespace biletmajster_backend.Controllers
 
             if (email == null)
             {
-                return BadRequest(new ErrorResponse { Message = "Invalid session" });
+                return StatusCode(403,new ErrorResponse { Message = "Invalid session" });
             }
+
+            _logger.LogDebug($"Get organizer request with email: {email}");
 
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
 
-            return Ok(_mapper.Map<OrganizerDTO>(organizer));
+            return StatusCode(200,_mapper.Map<OrganizerDTO>(organizer));
         }
 
         /// <summary>
@@ -140,24 +160,26 @@ namespace biletmajster_backend.Controllers
         /// <param name="email">The organizer email for login</param>
         /// <param name="password">the password</param>
         /// <response code="200">successful operation</response>
-        /// <response code="400">Invalid email/password supplied</response>
+        /// <response code="400">Invalid email or password</response>
         [HttpGet]
-        [Route("/api/v3/organizer/login")]
+        [Route("/organizer/login")]
         [ValidateModelState]
         [SwaggerOperation("LoginOrganizer")]
         [SwaggerResponse(statusCode: 200, type: typeof(InlineResponse200), description: "successful operation")]
-        public virtual async Task<IActionResult> LoginOrganizer([FromQuery] [Required] string email,
-            [FromQuery] [Required] string password)
+        public virtual async Task<IActionResult> LoginOrganizer([FromHeader][Required]string email, [FromHeader][Required]string password)
         {
+            _logger.LogDebug($"Login organizer request with email: {email}");
+
             try
             {
                 var token = await _organizerIdentityManager.LoginAsync(email, password);
 
-                return Ok(new InlineResponse200 { SessionToken = token });
+                return StatusCode(200,new InlineResponse200 { SessionToken = token });
             }
             catch (Exception e)
             {
-                return BadRequest(new ErrorResponse { Message = e.Message });
+                _logger.LogDebug($"Cannot login organizer with email: {email}, error: {e.Message}");
+                return StatusCode(400, new ErrorResponse { Message = e.Message });
             }
         }
 
@@ -166,66 +188,84 @@ namespace biletmajster_backend.Controllers
         /// </summary>
         /// <param name="id">id of Organizer</param>
         /// <param name="body">Update an existent user in the store</param>
+        /// <response code="200">nothing to do, no field to patch</response>
         /// <response code="202">patched</response>
+        /// <response code="400">invalid email or password</response>
+        /// <response code="403">invalid session</response>
         /// <response code="404">id not found</response>
         [HttpPatch]
-        [Route("/api/v3/organizer/{id}")]
+        [Route("/organizer/{id}")]
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchOrganizer")]
-        public virtual IActionResult PatchOrganizer([FromRoute] [Required] string id, [FromBody] OrganizerDTO body)
+        public virtual async Task<IActionResult> PatchOrganizer([FromRoute][Required]long id, [FromBody]OrganizerPatchDTO body)
         {
-            //TODO: Uncomment the next line to return response 202 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(202);
+            _logger.LogDebug($"Patch organizer request with id: {id}");
+            
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
+            if (email == null)
+            {
+                return StatusCode(404,new ErrorResponse { Message = "Invalid session" });
+            }
 
-            throw new NotImplementedException();
+            var originOrganizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
+            
+            if (originOrganizer == null)
+            {
+                return StatusCode(404, new ErrorResponse { Message = "Invalid session" });
+            }
+            
+            if (originOrganizer.Id != id)
+            {
+                return StatusCode(404, new ErrorResponse { Message = "You cannot patch other organizer" });
+            }
+
+            await _organizerIdentityManager.PatchOrganizerAsync(id, body);
+
+            return StatusCode(202);
         }
 
         /// <summary>
         /// Create orginizer account
         /// </summary>
-        /// <param name="name">name of Organizer</param>
-        /// <param name="email">email of Organizer</param>
-        /// <param name="password">password of Organizer</param>
+        /// <param name="body">Add event</param>
         /// <response code="201">successful operation</response>
-        /// <response code="400">organizer already exist</response>
+        /// <response code="400">email already in use</response>
         [HttpPost]
-        [Route("/api/v3/organizer")]
+        [Route("/organizer")]
         [ValidateModelState]
         [SwaggerOperation("SignUp")]
         [SwaggerResponse(statusCode: 201, type: typeof(OrganizerDTO), description: "successful operation")]
-        public virtual async Task<IActionResult> SignUp([FromQuery] [Required] string name,
-            [FromQuery] [Required] string email, [FromQuery] [Required] string password)
+        public virtual async Task<IActionResult> SignUp([FromBody]OrganizerFormDTO body)
         {
+            _logger.LogDebug($"SignUp request with email: {body.Email}, name: {body.Name}");
+
             // check if organizer already exist
-            var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
+            var organizer = await _organizersRepository.GetOrganizerByEmailAsync(body.Email);
 
             if (organizer != null)
             {
-                return BadRequest(new ErrorResponse
+                _logger.LogDebug($"Organizer with email: {body.Email} already exist");
+                return StatusCode(400, new ErrorResponse
                 {
                     Message = "Organizer already exist"
                 });
             }
 
             // register organizer
-            var newOrganizer = await _organizerIdentityManager.RegisterOrganizerAsync(name, email, password);
+            var newOrganizer = await _organizerIdentityManager.RegisterOrganizerAsync(body.Name, body.Email, body.Password);
 
             // send email with confirmation code
             await _confirmationService.SendConfirmationRequestAsync(newOrganizer);
 
             // return organizer 
-            return Ok(new OrganizerDTO
+            return StatusCode(201,new OrganizerDTO
             {
                 Id = newOrganizer.Id,
-                Name = name,
-                Email = email,
-                Password = password,
-                Events = new List<ModelEventDTO>(),
-                Status = OrganizerDTO.StatusEnum.Pending
+                Name = body.Name,
+                Email = body.Email,
+                Status = OrganizerDTO.StatusEnum.PendingEnum
             });
         }
     }

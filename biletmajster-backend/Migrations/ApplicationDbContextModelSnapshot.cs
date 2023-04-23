@@ -37,7 +37,7 @@ namespace biletmajster_backend.Migrations
                     b.ToTable("CategoryModelEvent");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.AccountConfirmationCode", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.AccountConfirmationCode", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,7 +62,7 @@ namespace biletmajster_backend.Migrations
                     b.ToTable("AccountConfirmationCodes");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.Category", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.Category", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -79,7 +79,7 @@ namespace biletmajster_backend.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.ModelEvent", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.ModelEvent", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -108,11 +108,10 @@ namespace biletmajster_backend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<long?>("OrganizerId")
+                    b.Property<long>("OrganizerId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("PlaceSchema")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<long>("StartTime")
@@ -132,7 +131,7 @@ namespace biletmajster_backend.Migrations
                     b.ToTable("ModelEvents");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.Organizer", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.Organizer", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -164,7 +163,7 @@ namespace biletmajster_backend.Migrations
                     b.ToTable("Organizers");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.Place", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.Place", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -188,7 +187,7 @@ namespace biletmajster_backend.Migrations
                     b.ToTable("Places");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.Reservation", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.Reservation", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -217,22 +216,22 @@ namespace biletmajster_backend.Migrations
 
             modelBuilder.Entity("CategoryModelEvent", b =>
                 {
-                    b.HasOne("biletmajster_backend.Database.Entities.Category", null)
+                    b.HasOne("biletmajster_backend.Domain.Category", null)
                         .WithMany()
                         .HasForeignKey("CategoriesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("biletmajster_backend.Database.Entities.ModelEvent", null)
+                    b.HasOne("biletmajster_backend.Domain.ModelEvent", null)
                         .WithMany()
                         .HasForeignKey("EventsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.AccountConfirmationCode", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.AccountConfirmationCode", b =>
                 {
-                    b.HasOne("biletmajster_backend.Database.Entities.Organizer", "Organizer")
+                    b.HasOne("biletmajster_backend.Domain.Organizer", "Organizer")
                         .WithMany()
                         .HasForeignKey("OrganizerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -241,16 +240,20 @@ namespace biletmajster_backend.Migrations
                     b.Navigation("Organizer");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.ModelEvent", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.ModelEvent", b =>
                 {
-                    b.HasOne("biletmajster_backend.Database.Entities.Organizer", null)
+                    b.HasOne("biletmajster_backend.Domain.Organizer", "Organizer")
                         .WithMany("Events")
-                        .HasForeignKey("OrganizerId");
+                        .HasForeignKey("OrganizerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organizer");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.Place", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.Place", b =>
                 {
-                    b.HasOne("biletmajster_backend.Database.Entities.ModelEvent", "Event")
+                    b.HasOne("biletmajster_backend.Domain.ModelEvent", "Event")
                         .WithMany("Places")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -259,15 +262,15 @@ namespace biletmajster_backend.Migrations
                     b.Navigation("Event");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.Reservation", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.Reservation", b =>
                 {
-                    b.HasOne("biletmajster_backend.Database.Entities.ModelEvent", "Event")
-                        .WithMany()
+                    b.HasOne("biletmajster_backend.Domain.ModelEvent", "Event")
+                        .WithMany("Reservations")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("biletmajster_backend.Database.Entities.Place", "Place")
+                    b.HasOne("biletmajster_backend.Domain.Place", "Place")
                         .WithMany()
                         .HasForeignKey("PlaceId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -278,12 +281,14 @@ namespace biletmajster_backend.Migrations
                     b.Navigation("Place");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.ModelEvent", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.ModelEvent", b =>
                 {
                     b.Navigation("Places");
+
+                    b.Navigation("Reservations");
                 });
 
-            modelBuilder.Entity("biletmajster_backend.Database.Entities.Organizer", b =>
+            modelBuilder.Entity("biletmajster_backend.Domain.Organizer", b =>
                 {
                     b.Navigation("Events");
                 });

@@ -1,11 +1,6 @@
-﻿using biletmajster_backend.Database.Entities;
-using biletmajster_backend.Database.Repositories.Interfaces;
+﻿using biletmajster_backend.Domain;
+using biletmajster_backend.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace biletmajster_backend.Database.Repositories
 {
@@ -14,19 +9,30 @@ namespace biletmajster_backend.Database.Repositories
         public PlaceRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
         }
+
         protected override DbSet<Place> DbSet => mDbContext.Places;
-        public async Task<bool> AddPlace(Place place)
+
+        public async Task<bool> AddPlaceAsync(Place place)
         {
             await DbSet.AddAsync(place);
-            return await SaveChanges();
+            return await SaveChangesAsync();
         }
 
-        public async Task<bool> SaveChanges()
+        public async Task<bool> RemovePlaceAsync(Place place)
+        {
+            DbSet.Remove(place);
+            return await SaveChangesAsync();
+        }
+
+        public async Task<Place?> GetPlaceByIdAsync(long id)
+        {
+            return await DbSet.FindAsync(id);
+        }
+
+        public async Task<bool> SaveChangesAsync()
         {
             var saved = await mDbContext.SaveChangesAsync();
             return saved > 0;
         }
     }
-
-
 }

@@ -9,20 +9,37 @@
  */
 
 using System.ComponentModel.DataAnnotations;
+using AutoMapper;
 using biletmajster_backend.Attributes;
-using biletmajster_backend.Domain.DTOS;
+using biletmajster_backend.Contracts;
+using biletmajster_backend.Database.Interfaces;
+using biletmajster_backend.Domain;
+using biletmajster_backend.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace biletmajster_backend.Controllers
-{ 
+{
     /// <summary>
     /// 
     /// </summary>
     [ApiController]
     public class ReservationApiController : ControllerBase
-    { 
+    {
+        private readonly IModelEventRepository _eventsRepository;
+        private readonly IReservationService _reservationService;
+        private readonly IMapper _mapper;
+        private readonly ILogger<ReservationApiController> _logger;
+
+        public ReservationApiController(IModelEventRepository eventsRepository, IReservationService reservationService,
+            IMapper mapper, ILogger<ReservationApiController> logger)
+        {
+            _eventsRepository = eventsRepository;
+            _reservationService = reservationService;
+            _mapper = mapper;
+            _logger = logger;
+        }
+
         /// <summary>
         /// Create new reservation
         /// </summary>
@@ -30,18 +47,20 @@ namespace biletmajster_backend.Controllers
         /// <response code="204">deleted</response>
         /// <response code="404">token not found</response>
         [HttpDelete]
-        [Route("/api/v3/reservation")]
+        [Route("/reservation")]
         [ValidateModelState]
         [SwaggerOperation("DeleteReservation")]
-        public virtual IActionResult DeleteReservation([FromQuery][Required()]string reservationToken)
-        { 
-            //TODO: Uncomment the next line to return response 204 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(204);
-
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
-
-            throw new NotImplementedException();
+        public virtual async Task<IActionResult> DeleteReservation([FromHeader] [Required] string reservationToken)
+        {
+            try
+            {
+                await _reservationService.DeleteReservationAsync(reservationToken);
+                return StatusCode(204);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(404, new ErrorResponse { Message = exception.Message });
+            }
         }
 
         /// <summary>
@@ -50,30 +69,41 @@ namespace biletmajster_backend.Controllers
         /// <param name="eventId">ID of event</param>
         /// <param name="placeID">ID of place</param>
         /// <response code="201">created</response>
-        /// <response code="400">no free place</response>
+        /// <response code="400">no free place or place taken</response>
         /// <response code="404">event not exist or done</response>
         [HttpPost]
-        [Route("/api/v3/reservation")]
+        [Route("/reservation")]
         [ValidateModelState]
         [SwaggerOperation("MakeReservation")]
         [SwaggerResponse(statusCode: 201, type: typeof(ReservationDTO), description: "created")]
-        public virtual IActionResult MakeReservation([FromQuery][Required()]long? eventId, [FromQuery]long? placeID)
-        { 
-            //TODO: Uncomment the next line to return response 201 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(201, default(ReservationDTO));
+        public virtual async Task<IActionResult> MakeReservation([FromHeader] [Required] long? eventId,
+            [FromHeader] long? placeID)
+        {
+            var e = await _eventsRepository.GetEventByIdAsync(eventId.Value);
 
-            //TODO: Uncomment the next line to return response 400 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(400);
+            if (e == null)
+            {
+                return StatusCode(404, new ErrorResponse { Message = "Event does not exist" });
+            }
 
-            //TODO: Uncomment the next line to return response 404 or use other options such as return this.NotFound(), return this.BadRequest(..), ...
-            // return StatusCode(404);
-            string exampleJson = null;
-            exampleJson = "{\n  \"reservationToken\" : \"df0d69cbe68fb6e2b27aa88f6f94497e\",\n  \"eventId\" : 1,\n  \"placeId\" : 12\n}";
-            
-                        var example = exampleJson != null
-                        ? JsonConvert.DeserializeObject<ReservationDTO>(exampleJson)
-                        : default(ReservationDTO);            //TODO: Change the data returned
-            return new ObjectResult(example);
+            if (e.FreePlace == 0)
+            {
+                return StatusCode(400, new ErrorResponse { Message = "No free places" });
+            }
+            if(e.Status == EventStatus.Done || e.Status == EventStatus.Cancelled)
+            {
+                return StatusCode(404, new ErrorResponse { Message = "Event has finished" });
+            }
+            try
+            {
+                var reservation = await _reservationService.MakeReservationAsync(e, placeID);
+
+                return StatusCode(201,_mapper.Map<ReservationDTO>(reservation));
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(404, new ErrorResponse { Message = exception.Message });
+            }
         }
     }
 }

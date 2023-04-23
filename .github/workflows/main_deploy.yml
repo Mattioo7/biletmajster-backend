@@ -21,13 +21,19 @@ jobs:
           dotnet-version: 7.x
       - name: Restore dependencies
         run: dotnet restore
-        working-directory: ./biletmajster-backend
+        working-directory: biletmajster-backend
       - name: Build with dotnet
-        run: dotnet build --configuration Release
-        working-directory: ./biletmajster-backend
+        run: dotnet build --configuration Release --no-restore
+        working-directory: biletmajster-backend
+      - name: Build successful - Apply migration to database
+        run: |
+          dotnet tool install --global dotnet-ef
+          dotnet tool restore
+          dotnet ef database update
+        working-directory: biletmajster-backend
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
-        working-directory: ./biletmajster-backend
+        working-directory: biletmajster-backend
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:

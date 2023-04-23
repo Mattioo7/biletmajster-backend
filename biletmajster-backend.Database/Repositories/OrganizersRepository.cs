@@ -1,15 +1,14 @@
-using biletmajster_backend.Database.Entities;
-using biletmajster_backend.Database.Repositories.Interfaces;
+using biletmajster_backend.Domain;
+using biletmajster_backend.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace biletmajster_backend.Database.Repositories;
 
-public class OrganizersRepository :  BaseRepository<Organizer>, IOrganizersRepository
+public class OrganizersRepository : BaseRepository<Organizer>, IOrganizersRepository
 {
     private readonly IConfiguration _configuration;
-    
+
     public OrganizersRepository(ApplicationDbContext dbContext, IConfiguration configuration) : base(dbContext)
     {
         _configuration = configuration;
@@ -61,7 +60,7 @@ public class OrganizersRepository :  BaseRepository<Organizer>, IOrganizersRepos
     public async Task DeleteOrganizerByIdAsync(long id)
     {
         var organizer = await DbSet.FindAsync(id);
-        
+
         if (organizer != null)
         {
             DbSet.Remove(organizer);
@@ -73,6 +72,13 @@ public class OrganizersRepository :  BaseRepository<Organizer>, IOrganizersRepos
     public async Task SaveChangesAsync()
     {
         await mDbContext.SaveChangesAsync();
+    }
+
+    public async Task<Organizer> UpdateOrganizer(Organizer organizerToUpdate)
+    {
+        var ret =  DbSet.Update(organizerToUpdate).Entity;
+        await SaveChangesAsync();
+        return ret;
     }
 
     protected override DbSet<Organizer> DbSet => mDbContext.Organizers;
