@@ -31,6 +31,7 @@ jobs:
           dotnet tool restore
           dotnet ef database update
         env:
+          ConnectionString: ${{secrets.CONNECTION_STRING}}
           Mail__Port: 1
           Mail__Host: 127.0.0.1
           Mail__UseSsl: false
