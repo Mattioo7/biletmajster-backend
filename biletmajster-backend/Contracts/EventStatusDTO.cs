@@ -12,32 +12,33 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace biletmajster_backend.Contracts
-{ 
+{
+    /// <summary>
+    /// event status
+    /// </summary>
+    /// <value>event status</value>
+    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    public enum EventStatusDTO
+    {
         /// <summary>
-        /// event status
+        /// Enum InFutureEnum for inFuture
         /// </summary>
-        /// <value>event status</value>
-        [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public enum EventStatusDTO
-        {
-            /// <summary>
-            /// Enum InFutureEnum for inFuture
-            /// </summary>
-            [EnumMember(Value = "inFuture")]
-            InFutureEnum = 0,
-            /// <summary>
-            /// Enum PendingEnum for pending
-            /// </summary>
-            [EnumMember(Value = "pending")]
-            PendingEnum = 1,
-            /// <summary>
-            /// Enum DoneEnum for done
-            /// </summary>
-            [EnumMember(Value = "done")]
-            DoneEnum = 2,
-            /// <summary>
-            /// Enum CancelledEnum for cancelled
-            /// </summary>
-            [EnumMember(Value = "cancelled")]
-            CancelledEnum = 3        }
+        [EnumMember(Value = "inFuture")]
+        InFutureEnum = 0,
+        /// <summary>
+        /// Enum PendingEnum for pending
+        /// </summary>
+        [EnumMember(Value = "pending")]
+        PendingEnum = 1,
+        /// <summary>
+        /// Enum DoneEnum for done
+        /// </summary>
+        [EnumMember(Value = "done")]
+        DoneEnum = 2,
+        /// <summary>
+        /// Enum CancelledEnum for cancelled
+        /// </summary>
+        [EnumMember(Value = "cancelled")]
+        CancelledEnum = 3
+    }
 }

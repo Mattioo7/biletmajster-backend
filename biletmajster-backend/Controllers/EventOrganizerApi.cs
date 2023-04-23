@@ -66,13 +66,13 @@ namespace biletmajster_backend.Controllers
             if (organizer == null)
             {
                 _logger.LogDebug($"Cannot find organizer with id: {id}");
-                return NotFound(new ErrorResponse { Message = "Organizer not found" });
+                return StatusCode(400, new ErrorResponse { Message = "Organizer not found" });
             }
 
             if (organizer.Status != OrganizerAccountStatus.PendingForConfirmation)
             {
                 _logger.LogDebug($"Invalid status of organizer with id: {id}, status: {organizer.Status.ToString()}");
-                return BadRequest(new ErrorResponse { Message = "Organizer account is not pending for confirmation" });
+                return StatusCode(400, new ErrorResponse { Message = "Organizer account is not pending for confirmation" });
             }
 
             var expectedCode = await _confirmationService.GetConfirmationCodeAsync(organizer);
@@ -80,12 +80,12 @@ namespace biletmajster_backend.Controllers
             if (expectedCode != code)
             {
                 _logger.LogDebug($"Invalid confirmation code for organizer with id: {id}");
-                return BadRequest(new ErrorResponse { Message = "Confirmation code is wrong" });
+                return StatusCode(400,new ErrorResponse { Message = "Confirmation code is wrong" });
             }
 
             await _organizersRepository.UpdateOrganizerAccountStatusAsync(organizer, OrganizerAccountStatus.Confirmed);
 
-            return Ok(_mapper.Map<OrganizerDTO>(organizer));
+            return StatusCode(201,_mapper.Map<OrganizerDTO>(organizer));
         }
 
         /// <summary>
@@ -108,23 +108,23 @@ namespace biletmajster_backend.Controllers
 
             if (email == null)
             {
-                return BadRequest(new ErrorResponse { Message = "Invalid session" });
+                return StatusCode(404, new ErrorResponse { Message = "Invalid session" });
             }
 
             // check if organizer wants to delete himself
             var originOrganizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
             if (originOrganizer == null)
             {
-                return NotFound(new ErrorResponse { Message = "Organizer not found" });
+                return StatusCode(404, new ErrorResponse { Message = "Organizer not found" });
             }
 
             if (originOrganizer.Id != id)
             {
-                return BadRequest(new ErrorResponse { Message = "You cannot delete other organizer" });
+                return StatusCode(404, new ErrorResponse { Message = "You cannot delete other organizer" });
             }
 
             await _organizersRepository.DeleteOrganizerByIdAsync(id);
-            return Ok();
+            return StatusCode(204);
         }
 
         /// <summary>
@@ -144,14 +144,14 @@ namespace biletmajster_backend.Controllers
 
             if (email == null)
             {
-                return BadRequest(new ErrorResponse { Message = "Invalid session" });
+                return StatusCode(403,new ErrorResponse { Message = "Invalid session" });
             }
 
             _logger.LogDebug($"Get organizer request with email: {email}");
 
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
 
-            return Ok(_mapper.Map<OrganizerDTO>(organizer));
+            return StatusCode(200,_mapper.Map<OrganizerDTO>(organizer));
         }
 
         /// <summary>
@@ -174,12 +174,12 @@ namespace biletmajster_backend.Controllers
             {
                 var token = await _organizerIdentityManager.LoginAsync(email, password);
 
-                return Ok(new InlineResponse200 { SessionToken = token });
+                return StatusCode(200,new InlineResponse200 { SessionToken = token });
             }
             catch (Exception e)
             {
                 _logger.LogDebug($"Cannot login organizer with email: {email}, error: {e.Message}");
-                return BadRequest(new ErrorResponse { Message = e.Message });
+                return StatusCode(400, new ErrorResponse { Message = e.Message });
             }
         }
 
@@ -206,24 +206,24 @@ namespace biletmajster_backend.Controllers
 
             if (email == null)
             {
-                return BadRequest(new ErrorResponse { Message = "Invalid session" });
+                return StatusCode(404,new ErrorResponse { Message = "Invalid session" });
             }
 
             var originOrganizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
             
             if (originOrganizer == null)
             {
-                return BadRequest(new ErrorResponse { Message = "Invalid session" });
+                return StatusCode(404, new ErrorResponse { Message = "Invalid session" });
             }
             
             if (originOrganizer.Id != id)
             {
-                return BadRequest(new ErrorResponse { Message = "You cannot patch other organizer" });
+                return StatusCode(404, new ErrorResponse { Message = "You cannot patch other organizer" });
             }
 
             await _organizerIdentityManager.PatchOrganizerAsync(id, body);
 
-            return Ok();
+            return StatusCode(202);
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace biletmajster_backend.Controllers
             if (organizer != null)
             {
                 _logger.LogDebug($"Organizer with email: {body.Email} already exist");
-                return BadRequest(new ErrorResponse
+                return StatusCode(400, new ErrorResponse
                 {
                     Message = "Organizer already exist"
                 });
@@ -260,7 +260,7 @@ namespace biletmajster_backend.Controllers
             await _confirmationService.SendConfirmationRequestAsync(newOrganizer);
 
             // return organizer 
-            return Ok(new OrganizerDTO
+            return StatusCode(201,new OrganizerDTO
             {
                 Id = newOrganizer.Id,
                 Name = body.Name,

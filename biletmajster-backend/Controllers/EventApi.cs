@@ -92,7 +92,7 @@ namespace biletmajster_backend.Controllers
                     ModelState.Clear();
                     ModelState.AddModelError("", $"Can 't find category with id: {id}");
                     _logger.LogDebug($"Category with id: {id} can not be found");
-                    return BadRequest(ModelState);
+                    return StatusCode(400, ModelState);
                 }
 
                 categoriesList.Add(category);
@@ -109,13 +109,13 @@ namespace biletmajster_backend.Controllers
 
             if (await _modelEventRepository.AddEventAsync(databaseEvent))
             {
-                return new ObjectResult(_mapper.Map<EventWithPlacesDTO>(databaseEvent));
+                return StatusCode(201, _mapper.Map<ModelEventDTO>(databaseEvent));
             }
             else
             {
                 ModelState.Clear();
                 ModelState.AddModelError("", "Something went wrong while savin");
-                return StatusCode(500, ModelState);
+                return StatusCode(400, ModelState);
             }
         }
 
@@ -136,10 +136,10 @@ namespace biletmajster_backend.Controllers
             _logger.LogDebug($"Delete event with id: {id}");
             if (await _modelEventRepository.DeleteEventAsync(long.Parse(id)))
             {
-                return Ok();
+                return StatusCode(204);
             }
 
-            return NotFound(new ErrorResponse { Message = "Event not found" });
+            return StatusCode(404,new ErrorResponse { Message = "Event not found" });
         }
 
         /// <summary>
@@ -155,8 +155,12 @@ namespace biletmajster_backend.Controllers
         [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
         public virtual async Task<IActionResult> GetByCategory([FromHeader][Required] long? categoryId)
         {
+            if(categoryId == null)
+            {
+                return StatusCode(400, new ErrorResponse { Message = "Bad ID" });
+            }
             var events = await _modelEventRepository.GetEventsByCategoryAsync(categoryId.Value);
-            return Ok(_mapper.Map<List<ModelEventDTO>>(events));
+            return StatusCode(200,_mapper.Map<List<ModelEventDTO>>(events));
         }
 
         /// <summary>
@@ -174,14 +178,19 @@ namespace biletmajster_backend.Controllers
         [SwaggerResponse(statusCode: 200, type: typeof(EventWithPlacesDTO), description: "successful operation")]
         public virtual async Task<IActionResult> GetEventById([FromRoute][Required] long? id)
         {
+            if (id == null)
+            {
+                return StatusCode(400, new ErrorResponse { Message = "Bad ID" });
+            }
+
             var @event = await _modelEventRepository.GetEventByIdAsync(id.Value);
 
             if (@event == null)
             {
-                return NotFound(new ErrorResponse { Message = "Event not found" });
+                return StatusCode(404, new ErrorResponse { Message = "Event not found" });
             }
 
-            return Ok(_mapper.Map<EventWithPlacesDTO>(@event));
+            return StatusCode(200, _mapper.Map<EventWithPlacesDTO>(@event));
         }
 
         /// <summary>
@@ -197,7 +206,7 @@ namespace biletmajster_backend.Controllers
         {
             var events = await _modelEventRepository.GetAllEventsAsync();
 
-            return Ok(events.Select(e => _mapper.Map<ModelEventDTO>(e)).ToList());
+            return StatusCode(200, events.Select(e => _mapper.Map<ModelEventDTO>(e)).ToList());
         }
 
         /// <summary>
@@ -216,7 +225,7 @@ namespace biletmajster_backend.Controllers
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
             var events = await _modelEventRepository.GetEventsByOrganizerIdAsync(organizer.Id);
-            return Ok(events.Select(e => _mapper.Map<ModelEventDTO>(e)).ToList());
+            return StatusCode(200, events.Select(e => _mapper.Map<ModelEventDTO>(e)).ToList());
         }
 
         /// <summary>
@@ -242,18 +251,18 @@ namespace biletmajster_backend.Controllers
             var EventToUpdate = await _modelEventRepository.GetEventByIdAsync(long.Parse(id));
             if (EventToUpdate == null)
             {
-                return NotFound(new ErrorResponse { Message = $"Event with id: {long.Parse(id)} not found" });
+                return StatusCode(404, new ErrorResponse { Message = $"Event with id: {long.Parse(id)} not found" });
             }
 
             if (EventToUpdate.Organizer.Id != organizer.Id)
             {
-                return BadRequest(new ErrorResponse
+                return StatusCode(404,new ErrorResponse
                 { Message = $"Event with id: {long.Parse(id)} does not belong to you" });
             }
 
             if (EventToUpdate.Status != EventStatus.InFuture)
             {
-                return BadRequest(new ErrorResponse
+                return StatusCode(404, new ErrorResponse
                 { Message = "Event has just started, you can not edit ongoing events" });
             }
 
@@ -289,7 +298,7 @@ namespace biletmajster_backend.Controllers
                     var currCategory = await _categoriesRepository.GetCategoryByIdAsync(categoryId.Value);
                     if (currCategory == null)
                     {
-                        return NotFound(new ErrorResponse { Message = $"Category with id: {categoryId} not found" });
+                        return StatusCode(404, new ErrorResponse { Message = $"Category with id: {categoryId} not found" });
                     }
 
                     categoriesList.Add(currCategory);
@@ -300,7 +309,7 @@ namespace biletmajster_backend.Controllers
 
             EventToUpdate.UpdateData(_mapper.Map<ModelEvent>(body));
             await _modelEventRepository.PatchEventAsync(EventToUpdate, places);
-            return new ObjectResult(_mapper.Map<ModelEventDTO>(EventToUpdate));
+            return StatusCode(202,_mapper.Map<ModelEventDTO>(EventToUpdate));
         }
     }
 }
