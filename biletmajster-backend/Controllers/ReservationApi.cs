@@ -11,9 +11,8 @@
 using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using biletmajster_backend.Attributes;
-using biletmajster_backend.Database.Repositories.Interfaces;
-using biletmajster_backend.Domain.DTOS;
-using biletmajster_backend.Domain.Errors;
+using biletmajster_backend.Contracts;
+using biletmajster_backend.Database.Interfaces;
 using biletmajster_backend.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;

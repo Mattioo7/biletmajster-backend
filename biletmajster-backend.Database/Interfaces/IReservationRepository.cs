@@ -1,6 +1,6 @@
 using biletmajster_backend.Database.Entities;
 
-namespace biletmajster_backend.Database.Repositories.Interfaces;
+namespace biletmajster_backend.Database.Interfaces;
 
 public interface IReservationRepository
 {

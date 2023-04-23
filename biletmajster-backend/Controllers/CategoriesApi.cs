@@ -11,8 +11,8 @@
 using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using biletmajster_backend.Attributes;
-using biletmajster_backend.Database.Repositories.Interfaces;
-using biletmajster_backend.Domain.DTOS;
+using biletmajster_backend.Contracts;
+using biletmajster_backend.Database.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -98,7 +98,7 @@ namespace biletmajster_backend.Controllers
         public virtual async Task<IActionResult> GetCategories()
         {
             var categories = await _categoriesRepository.GetAllCategoriesAsync();
-            var resultList = new List<Domain.DTOS.CategoryDTO>();
+            var resultList = new List<CategoryDTO>();
             foreach (var category in categories)
             {
                 resultList.Add(_mapper.Map<CategoryDTO>(category));
