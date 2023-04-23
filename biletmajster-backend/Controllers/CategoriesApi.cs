@@ -71,19 +71,19 @@ namespace biletmajster_backend.Controllers
                 ModelState.Clear();
                 ModelState.AddModelError("", "Category already exists");
                 _logger.LogDebug($"Category with name: {categoryName} already exists");
-                return StatusCode(422, ModelState);
+                return StatusCode(400, ModelState);
             }
 
             if (await _categoriesRepository.AddCategoryAsync(tmp))
             {
-                return Ok("Successfully created");
+                return StatusCode(201, _mapper.Map<CategoryDTO>(tmp));
             }
             else
             {
                 ModelState.Clear();
                 ModelState.AddModelError("", "Something went wrong while savin");
                 _logger.LogDebug($"Category with name: {categoryName} was not added, something went wrong");
-                return StatusCode(500, ModelState);
+                return StatusCode(400, ModelState);
             }
         }
 
@@ -104,15 +104,7 @@ namespace biletmajster_backend.Controllers
             {
                 resultList.Add(_mapper.Map<CategoryDTO>(category));
             }
-
-            if (resultList.Count == 0)
-            {
-                ModelState.Clear();
-                ModelState.AddModelError("", "No categories in DataBase");
-                return StatusCode(404, ModelState);
-            }
-
-            return new ObjectResult(resultList);
+            return StatusCode(200,resultList);
         }
     }
 }

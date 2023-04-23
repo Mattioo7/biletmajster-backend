@@ -13,6 +13,7 @@ using AutoMapper;
 using biletmajster_backend.Attributes;
 using biletmajster_backend.Contracts;
 using biletmajster_backend.Database.Interfaces;
+using biletmajster_backend.Domain;
 using biletmajster_backend.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -54,11 +55,11 @@ namespace biletmajster_backend.Controllers
             try
             {
                 await _reservationService.DeleteReservationAsync(reservationToken);
-                return NoContent();
+                return StatusCode(204);
             }
             catch (Exception exception)
             {
-                return NotFound(new ErrorResponse { Message = exception.Message });
+                return StatusCode(404, new ErrorResponse { Message = exception.Message });
             }
         }
 
@@ -82,23 +83,26 @@ namespace biletmajster_backend.Controllers
 
             if (e == null)
             {
-                return NotFound(new ErrorResponse { Message = "Event does not exist" });
+                return StatusCode(404, new ErrorResponse { Message = "Event does not exist" });
             }
 
             if (e.FreePlace == 0)
             {
-                return BadRequest(new ErrorResponse { Message = "No free places" });
+                return StatusCode(400, new ErrorResponse { Message = "No free places" });
             }
-
+            if(e.Status == EventStatus.Done || e.Status == EventStatus.Cancelled)
+            {
+                return StatusCode(404, new ErrorResponse { Message = "Event has finished" });
+            }
             try
             {
                 var reservation = await _reservationService.MakeReservationAsync(e, placeID);
 
-                return Ok(_mapper.Map<ReservationDTO>(reservation));
+                return StatusCode(201,_mapper.Map<ReservationDTO>(reservation));
             }
             catch (Exception exception)
             {
-                return BadRequest(new ErrorResponse { Message = exception.Message });
+                return StatusCode(404, new ErrorResponse { Message = exception.Message });
             }
         }
     }
