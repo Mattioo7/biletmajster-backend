@@ -1,4 +1,4 @@
-﻿using biletmajster_backend.Database.Entities;
+﻿using biletmajster_backend.Domain;
 
 namespace biletmajster_backend.Database.Interfaces
 {

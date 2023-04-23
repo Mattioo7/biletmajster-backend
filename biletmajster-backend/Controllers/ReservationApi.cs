@@ -18,19 +18,20 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace biletmajster_backend.Controllers
-{ 
+{
     /// <summary>
     /// 
     /// </summary>
     [ApiController]
     public class ReservationApiController : ControllerBase
-    { 
+    {
         private readonly IModelEventRepository _eventsRepository;
         private readonly IReservationService _reservationService;
         private readonly IMapper _mapper;
         private readonly ILogger<ReservationApiController> _logger;
-        
-        public ReservationApiController(IModelEventRepository eventsRepository, IReservationService reservationService, IMapper mapper, ILogger<ReservationApiController> logger)
+
+        public ReservationApiController(IModelEventRepository eventsRepository, IReservationService reservationService,
+            IMapper mapper, ILogger<ReservationApiController> logger)
         {
             _eventsRepository = eventsRepository;
             _reservationService = reservationService;
@@ -48,11 +49,11 @@ namespace biletmajster_backend.Controllers
         [Route("/reservation")]
         [ValidateModelState]
         [SwaggerOperation("DeleteReservation")]
-        public virtual async Task<IActionResult> DeleteReservation([FromHeader][Required]string reservationToken)
-        { 
+        public virtual async Task<IActionResult> DeleteReservation([FromHeader] [Required] string reservationToken)
+        {
             try
             {
-                _reservationService.DeleteReservationAsync(reservationToken);
+                await _reservationService.DeleteReservationAsync(reservationToken);
                 return NoContent();
             }
             catch (Exception exception)
@@ -74,13 +75,14 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("MakeReservation")]
         [SwaggerResponse(statusCode: 201, type: typeof(ReservationDTO), description: "created")]
-        public virtual async Task<IActionResult> MakeReservation([FromHeader][Required]long? eventId, [FromHeader]long? placeID)
-        { 
+        public virtual async Task<IActionResult> MakeReservation([FromHeader] [Required] long? eventId,
+            [FromHeader] long? placeID)
+        {
             var e = await _eventsRepository.GetEventByIdAsync(eventId.Value);
 
             if (e == null)
             {
-                return NotFound(new ErrorResponse {Message = "Event does not exist"});
+                return NotFound(new ErrorResponse { Message = "Event does not exist" });
             }
 
             if (e.FreePlace == 0)

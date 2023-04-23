@@ -14,7 +14,7 @@ using AutoMapper;
 using biletmajster_backend.Interfaces;
 using biletmajster_backend.Attributes;
 using biletmajster_backend.Contracts;
-using biletmajster_backend.Database.Entities;
+using biletmajster_backend.Domain;
 using biletmajster_backend.Database.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

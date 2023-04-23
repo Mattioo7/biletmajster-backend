@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace biletmajster_backend.Database.Entities;
+namespace biletmajster_backend.Domain;
 
 public class Place
 {

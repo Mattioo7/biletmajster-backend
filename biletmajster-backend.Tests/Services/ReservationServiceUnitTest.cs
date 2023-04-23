@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using biletmajster_backend.Database.Entities;
+using biletmajster_backend.Domain;
 using biletmajster_backend.Database.Interfaces;
 using biletmajster_backend.Services;
 using Microsoft.Extensions.Logging;

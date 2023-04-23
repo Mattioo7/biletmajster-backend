@@ -1,4 +1,4 @@
-namespace biletmajster_backend.Database.Entities;
+namespace biletmajster_backend.Domain;
 
 public enum OrganizerAccountStatus
 {
