@@ -12,5 +12,7 @@ namespace biletmajster_backend.Database.Repositories.Interfaces
         public Task<bool> DeleteEventAsync(long id);
         public Task<bool> AddEventAsync(ModelEvent _event);
         public Task<bool> SaveChangesAsync();
+        Task<List<ModelEvent>> GetEventsByOrganizerIdAsync(long organizerId);
+        Task<List<ModelEvent>> GetEventsByCategoryAsync(long categoryId);
     }
 }
