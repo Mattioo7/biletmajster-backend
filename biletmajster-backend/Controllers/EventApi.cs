@@ -13,7 +13,7 @@ using System.Security.Claims;
 using AutoMapper;
 using biletmajster_backend.Attributes;
 using biletmajster_backend.Contracts;
-using biletmajster_backend.Database.Entities;
+using biletmajster_backend.Domain;
 using biletmajster_backend.Database.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -69,10 +69,10 @@ namespace biletmajster_backend.Controllers
             var databaseEvent = _mapper.Map<ModelEvent>(body);
             // Places List: (Database)
             // Handling Places
-            List<Database.Entities.Place> places = new List<Database.Entities.Place>();
+            List<Place> places = new List<Place>();
             for (int i = 0; i < body.MaxPlace; i++)
             {
-                var place = new Database.Entities.Place()
+                var place = new Place()
                 {
                     Free = true,
                     SeatNumber = i + 1,
@@ -83,7 +83,7 @@ namespace biletmajster_backend.Controllers
 
             // Category List:
             // Handling Categories
-            List<Database.Entities.Category> categoriesList = new List<Database.Entities.Category>();
+            List<Category> categoriesList = new List<Category>();
             foreach (var id in body.CategoriesIds)
             {
                 var category = await _categoriesRepository.GetCategoryByIdAsync((int)id);
@@ -263,7 +263,7 @@ namespace biletmajster_backend.Controllers
                 int idx = EventToUpdate.Places.Count;
                 for (int i = idx; i < body.MaxPlace; i++)
                 {
-                    var place = new Database.Entities.Place()
+                    var place = new Place()
                     {
                         Free = true,
                         SeatNumber = i + 1,
@@ -273,7 +273,7 @@ namespace biletmajster_backend.Controllers
                 }
             }
 
-            List<Database.Entities.Category> categoriesList = new List<Database.Entities.Category>();
+            List<Category> categoriesList = new List<Category>();
             foreach (var category in EventToUpdate.Categories)
             {
                 category.Events.Remove(EventToUpdate);

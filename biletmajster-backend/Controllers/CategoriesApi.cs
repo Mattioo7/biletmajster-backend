@@ -13,6 +13,7 @@ using AutoMapper;
 using biletmajster_backend.Attributes;
 using biletmajster_backend.Contracts;
 using biletmajster_backend.Database.Interfaces;
+using biletmajster_backend.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -60,7 +61,7 @@ namespace biletmajster_backend.Controllers
         {
             _logger.LogDebug($"Add Category with name: {categoryName}");
 
-            var tmp = _mapper.Map<Database.Entities.Category>(new CategoryDTO()
+            var tmp = _mapper.Map<Category>(new CategoryDTO()
             {
                 Name = categoryName
             });

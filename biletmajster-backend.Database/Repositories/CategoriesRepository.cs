@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using biletmajster_backend.Database.Entities;
+using biletmajster_backend.Domain;
 using biletmajster_backend.Database.Interfaces;
 
 namespace biletmajster_backend.Database.Repositories

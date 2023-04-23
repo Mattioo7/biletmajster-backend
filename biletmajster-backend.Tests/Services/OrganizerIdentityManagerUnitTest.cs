@@ -3,7 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
-using biletmajster_backend.Database.Entities;
+using biletmajster_backend.Domain;
 using biletmajster_backend.Database.Interfaces;
 using biletmajster_backend.Services;
 using Microsoft.Extensions.Configuration;
