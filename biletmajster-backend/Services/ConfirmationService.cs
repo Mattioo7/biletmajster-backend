@@ -1,6 +1,6 @@
 using biletmajster_backend.Interfaces;
 using biletmajster_backend.Database.Entities;
-using biletmajster_backend.Database.Repositories.Interfaces;
+using biletmajster_backend.Database.Interfaces;
 
 namespace biletmajster_backend.Services;
 

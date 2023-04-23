@@ -1,5 +1,5 @@
 ﻿using biletmajster_backend.Database.Entities;
-using biletmajster_backend.Database.Repositories.Interfaces;
+using biletmajster_backend.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace biletmajster_backend.Database.Repositories
@@ -17,6 +17,7 @@ namespace biletmajster_backend.Database.Repositories
         {
             await mDbContext.Places.AddRangeAsync(_event.Places);
             // TODO: Use ICategoryInterface to update!
+            mDbContext.Categories.UpdateRange(_event.Categories);
 
             mDbContext.Categories.UpdateRange(_event.Categories);
             mDbContext.Organizers.Update(_event.Organizer);
@@ -69,6 +70,56 @@ namespace biletmajster_backend.Database.Repositories
             else
                 return false;
             return await SaveChangesAsync();
+        }
+
+
+        public async Task<bool> ReservePlaceAsync(ModelEvent modelEvent, long? placeId)
+        {
+            Place place;
+            try
+            {
+                place = modelEvent.Places.First(p => p.Id == placeId);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Place not found!");
+            }
+
+            if (!place.Free)
+            {
+                throw new Exception("Place is already reserved!");
+            }
+
+            modelEvent.FreePlace--;
+            place.Free = false;
+
+            DbSet.Update(modelEvent);
+
+            return await SaveChangesAsync();
+        }
+
+        public async Task<long> ReserveRandomPlace(ModelEvent modelEvent)
+        {
+            var place = modelEvent.Places.First(p => p.Free);
+
+            if (place == null)
+            {
+                throw new Exception("No free places!");
+            }
+
+            place.Free = false;
+            modelEvent.FreePlace--;
+            DbSet.Update(modelEvent);
+            SaveChangesAsync();
+            return place.Id;
+        }
+
+        public Task DeleteReservationAsync(ModelEvent reservationEvent, Place reservationPlace)
+        {
+            reservationPlace.Free = true;
+            reservationEvent.FreePlace++;
+            DbSet.Update(reservationEvent);
+            return SaveChangesAsync();
         }
     }
 }

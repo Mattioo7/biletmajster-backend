@@ -3,10 +3,10 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
+using biletmajster_backend.Contracts;
 using biletmajster_backend.Interfaces;
 using biletmajster_backend.Database.Entities;
-using biletmajster_backend.Database.Repositories.Interfaces;
-using biletmajster_backend.Domain.DTOS;
+using biletmajster_backend.Database.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 
 namespace biletmajster_backend.Services;

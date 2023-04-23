@@ -4,9 +4,9 @@
 using System.Text;
 using biletmajster_backend.Database;
 using biletmajster_backend.Database.Repositories;
-using biletmajster_backend.Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using biletmajster_backend.Configurations;
+using biletmajster_backend.Database.Interfaces;
 using biletmajster_backend.Interfaces;
 using biletmajster_backend.Jwt;
 using biletmajster_backend.Services;
@@ -62,6 +62,9 @@ services.AddScoped<IOrganizersRepository, OrganizersRepository>();
 services.AddScoped<IConfirmationService, ConfirmationService>();
 services.AddScoped<IOrganizerIdentityManager, OrganizerIdentityManager>();
 services.AddScoped<IPlaceRepository, PlaceRepository>();
+services.AddScoped<IPlaceRepository,PlaceRepository>();
+services.AddScoped<IReservationRepository,ReservationRepository>();
+services.AddScoped<IReservationService,ReservationService>();
 
 // Data Base Section:
 
