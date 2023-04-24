@@ -69,7 +69,7 @@ services.AddScoped<IReservationService,ReservationService>();
 // Data Base Section:
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddEndpointsApiExplorer();
@@ -83,6 +83,8 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowCredentials();
     }));
+
+builder.Services.AddSwaggerGenNewtonsoftSupport();
 
 var app = builder.Build();
 
