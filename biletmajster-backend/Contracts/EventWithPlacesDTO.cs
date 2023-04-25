@@ -19,7 +19,7 @@ namespace biletmajster_backend.Contracts
     /// 
     /// </summary>
     [DataContract]
-    public partial class EventWithPlacesDTO : IEquatable<EventWithPlacesDTO>
+    public partial class EventWithPlacesDto : IEquatable<EventWithPlacesDto>
     { 
         /// <summary>
         /// Gets or Sets Id
@@ -83,7 +83,7 @@ namespace biletmajster_backend.Contracts
         [Required]
 
         [DataMember(Name="status")]
-        public EventStatusDTO Status { get; set; }
+        public EventStatusDto Status { get; set; }
 
         /// <summary>
         /// Gets or Sets Categories
@@ -91,7 +91,7 @@ namespace biletmajster_backend.Contracts
         [Required]
 
         [DataMember(Name="categories")]
-        public List<CategoryDTO> Categories { get; set; }
+        public List<CategoryDto> Categories { get; set; }
 
         /// <summary>
         /// Gets or Sets FreePlace
@@ -115,7 +115,7 @@ namespace biletmajster_backend.Contracts
         [Required]
 
         [DataMember(Name="places")]
-        public List<PlaceDTO> Places { get; set; }
+        public List<PlaceDto> Places { get; set; }
 
         /// <summary>
         /// Gets or Sets PlaceSchema
@@ -167,7 +167,7 @@ namespace biletmajster_backend.Contracts
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((EventWithPlacesDTO)obj);
+            return obj.GetType() == GetType() && Equals((EventWithPlacesDto)obj);
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace biletmajster_backend.Contracts
         /// </summary>
         /// <param name="other">Instance of EventWithPlaces to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals(EventWithPlacesDTO other)
+        public bool Equals(EventWithPlacesDto other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -291,12 +291,12 @@ namespace biletmajster_backend.Contracts
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(EventWithPlacesDTO left, EventWithPlacesDTO right)
+        public static bool operator ==(EventWithPlacesDto left, EventWithPlacesDto right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(EventWithPlacesDTO left, EventWithPlacesDTO right)
+        public static bool operator !=(EventWithPlacesDto left, EventWithPlacesDto right)
         {
             return !Equals(left, right);
         }

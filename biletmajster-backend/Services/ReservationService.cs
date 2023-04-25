@@ -7,7 +7,7 @@ namespace biletmajster_backend.Services;
 public class ReservationService : IReservationService
 {
     private static int _reservationTokenLength = 10;
-    private static Random Random = new();
+    private static Random _random = new();
 
     private readonly IModelEventRepository _modelEventRepository;
     private readonly IPlaceRepository _placeRepository;
@@ -75,6 +75,6 @@ public class ReservationService : IReservationService
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         return new string(Enumerable.Repeat(chars, _reservationTokenLength)
-            .Select(s => s[Random.Next(s.Length)]).ToArray());
+            .Select(s => s[_random.Next(s.Length)]).ToArray());
     }
 }

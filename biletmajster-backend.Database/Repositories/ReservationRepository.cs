@@ -10,7 +10,7 @@ public class ReservationRepository : BaseRepository<Reservation>, IReservationRe
     {
     }
 
-    protected override DbSet<Reservation> DbSet => mDbContext.Reservations;
+    protected override DbSet<Reservation> DbSet => MDbContext.Reservations;
 
     public async Task<Reservation> AddReservationAsync(Reservation reservation)
     {
@@ -35,7 +35,7 @@ public class ReservationRepository : BaseRepository<Reservation>, IReservationRe
 
     public async Task<bool> SaveChangesAsync()
     {
-        var saved = await mDbContext.SaveChangesAsync();
+        var saved = await MDbContext.SaveChangesAsync();
         return saved > 0;
     }
 }

@@ -18,7 +18,7 @@ namespace biletmajster_backend.Contracts
     /// </summary>
     /// <value>event status</value>
     [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-    public enum EventStatusDTO
+    public enum EventStatusDto
     {
         /// <summary>
         /// Enum InFutureEnum for inFuture

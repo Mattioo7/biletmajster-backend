@@ -13,7 +13,7 @@ namespace biletmajster_backend.Services;
 
 public class OrganizerIdentityManager : IOrganizerIdentityManager
 {
-    private static int TokenExpirationTimeInSeconds = TimeSpan.FromDays(1).Seconds;
+    private static int _tokenExpirationTimeInSeconds = TimeSpan.FromDays(1).Seconds;
 
     private readonly IOrganizersRepository _organizersRepository;
     private readonly IConfiguration _configuration;
@@ -37,7 +37,7 @@ public class OrganizerIdentityManager : IOrganizerIdentityManager
         return await _organizersRepository.CreateOrganizerAsync(name, email, passwordHash, passwordSalt);
     }
 
-    public async Task<Organizer> PatchOrganizerAsync(long organizerId, OrganizerPatchDTO newOrganizer)
+    public async Task<Organizer> PatchOrganizerAsync(long organizerId, OrganizerPatchDto newOrganizer)
     {
         _logger.LogDebug($"Patching organizer {newOrganizer.Name}");
         
@@ -88,7 +88,7 @@ public class OrganizerIdentityManager : IOrganizerIdentityManager
             _configuration.GetSection("Jwt:Issuer").Value,
             _configuration.GetSection("Jwt:Audience").Value,
             claims: claims,
-            expires: DateTime.Now.AddSeconds(TokenExpirationTimeInSeconds),
+            expires: DateTime.Now.AddSeconds(_tokenExpirationTimeInSeconds),
             signingCredentials: cred
         );
 
