@@ -110,7 +110,7 @@ namespace biletmajster_backend.Database.Repositories
             place.Free = false;
             modelEvent.FreePlace--;
             DbSet.Update(modelEvent);
-            SaveChangesAsync();
+            await SaveChangesAsync();
             return place.Id;
         }
 
