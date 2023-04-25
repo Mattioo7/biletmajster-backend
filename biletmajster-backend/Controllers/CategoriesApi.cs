@@ -56,12 +56,12 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("AddCategories")]
-        [SwaggerResponse(statusCode: 201, type: typeof(CategoryDTO), description: "created")]
+        [SwaggerResponse(statusCode: 201, type: typeof(CategoryDto), description: "created")]
         public virtual async Task<IActionResult> AddCategories([FromHeader][Required]string categoryName)
         {
             _logger.LogDebug($"Add Category with name: {categoryName}");
 
-            var tmp = _mapper.Map<Category>(new CategoryDTO()
+            var tmp = _mapper.Map<Category>(new CategoryDto()
             {
                 Name = categoryName
             });
@@ -76,7 +76,7 @@ namespace biletmajster_backend.Controllers
 
             if (await _categoriesRepository.AddCategoryAsync(tmp))
             {
-                return StatusCode(201, _mapper.Map<CategoryDTO>(tmp));
+                return StatusCode(201, _mapper.Map<CategoryDto>(tmp));
             }
             else
             {
@@ -95,14 +95,14 @@ namespace biletmajster_backend.Controllers
         [Route("/categories")]
         [ValidateModelState]
         [SwaggerOperation("GetCategories")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<CategoryDTO>), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<CategoryDto>), description: "successful operation")]
         public virtual async Task<IActionResult> GetCategories()
         {
             var categories = await _categoriesRepository.GetAllCategoriesAsync();
-            var resultList = new List<CategoryDTO>();
+            var resultList = new List<CategoryDto>();
             foreach (var category in categories)
             {
-                resultList.Add(_mapper.Map<CategoryDTO>(category));
+                resultList.Add(_mapper.Map<CategoryDto>(category));
             }
             return StatusCode(200,resultList);
         }

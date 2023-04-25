@@ -85,7 +85,7 @@ namespace biletmajster_backend.Controllers
 
             await _organizersRepository.UpdateOrganizerAccountStatusAsync(organizer, OrganizerAccountStatus.Confirmed);
 
-            return StatusCode(201,_mapper.Map<OrganizerDTO>(organizer));
+            return StatusCode(201,_mapper.Map<OrganizerDto>(organizer));
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("GetOrganizer")]
-        [SwaggerResponse(statusCode: 200, type: typeof(OrganizerDTO), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(OrganizerDto), description: "successful operation")]
         public virtual async Task<IActionResult> GetOrganizer()
         {
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -151,7 +151,7 @@ namespace biletmajster_backend.Controllers
 
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
 
-            return StatusCode(200,_mapper.Map<OrganizerDTO>(organizer));
+            return StatusCode(200,_mapper.Map<OrganizerDto>(organizer));
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchOrganizer")]
-        public virtual async Task<IActionResult> PatchOrganizer([FromRoute][Required]long id, [FromBody]OrganizerPatchDTO body)
+        public virtual async Task<IActionResult> PatchOrganizer([FromRoute][Required]long id, [FromBody]OrganizerPatchDto body)
         {
             _logger.LogDebug($"Patch organizer request with id: {id}");
             
@@ -236,8 +236,8 @@ namespace biletmajster_backend.Controllers
         [Route("/organizer")]
         [ValidateModelState]
         [SwaggerOperation("SignUp")]
-        [SwaggerResponse(statusCode: 201, type: typeof(OrganizerDTO), description: "successful operation")]
-        public virtual async Task<IActionResult> SignUp([FromBody]OrganizerFormDTO body)
+        [SwaggerResponse(statusCode: 201, type: typeof(OrganizerDto), description: "successful operation")]
+        public virtual async Task<IActionResult> SignUp([FromBody]OrganizerFormDto body)
         {
             _logger.LogDebug($"SignUp request with email: {body.Email}, name: {body.Name}");
 
@@ -260,12 +260,12 @@ namespace biletmajster_backend.Controllers
             await _confirmationService.SendConfirmationRequestAsync(newOrganizer);
 
             // return organizer 
-            return StatusCode(201,new OrganizerDTO
+            return StatusCode(201,new OrganizerDto
             {
                 Id = newOrganizer.Id,
                 Name = body.Name,
                 Email = body.Email,
-                Status = OrganizerDTO.StatusEnum.PendingEnum
+                Status = OrganizerDto.StatusEnum.PendingEnum
             });
         }
     }

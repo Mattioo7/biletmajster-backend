@@ -18,7 +18,7 @@ namespace biletmajster_backend.Contracts
     /// 
     /// </summary>
     [DataContract]
-    public partial class EventPatchDTO : IEquatable<EventPatchDTO>
+    public partial class EventPatchDto : IEquatable<EventPatchDto>
     { 
         /// <summary>
         /// Gets or Sets Title
@@ -122,7 +122,7 @@ namespace biletmajster_backend.Contracts
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((EventPatchDTO)obj);
+            return obj.GetType() == GetType() && Equals((EventPatchDto)obj);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace biletmajster_backend.Contracts
         /// </summary>
         /// <param name="other">Instance of EventPatch to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals(EventPatchDTO other)
+        public bool Equals(EventPatchDto other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -218,12 +218,12 @@ namespace biletmajster_backend.Contracts
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(EventPatchDTO left, EventPatchDTO right)
+        public static bool operator ==(EventPatchDto left, EventPatchDto right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(EventPatchDTO left, EventPatchDTO right)
+        public static bool operator !=(EventPatchDto left, EventPatchDto right)
         {
             return !Equals(left, right);
         }

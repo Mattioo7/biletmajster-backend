@@ -9,41 +9,41 @@ namespace biletmajster_backend.Mapper
         // TODO: Inject repositories
         public AutoMapperProfile()
         {
-            CreateMap<ModelEventDTO, ModelEvent>();
-            CreateMap<ModelEvent, ModelEventDTO>();
-            CreateMap<EventFormDTO, ModelEvent>()
+            CreateMap<ModelEventDto, ModelEvent>();
+            CreateMap<ModelEvent, ModelEventDto>();
+            CreateMap<EventFormDto, ModelEvent>()
                 .ForMember(dest => dest.FreePlace, opt =>opt.MapFrom(src=>src.MaxPlace));
 
-            CreateMap<EventFormDTO, ModelEvent>()
+            CreateMap<EventFormDto, ModelEvent>()
                 .ForMember(destination => destination.FreePlace, m => m.MapFrom(source => source.MaxPlace));
-            CreateMap<ModelEvent, EventFormDTO>();
+            CreateMap<ModelEvent, EventFormDto>();
 
-            CreateMap<EventPatchDTO, ModelEvent>()
+            CreateMap<EventPatchDto, ModelEvent>()
                 .ForMember(destination => destination.FreePlace, m => m.MapFrom(source => source.MaxPlace));
-            CreateMap<ModelEvent, EventPatchDTO>();
+            CreateMap<ModelEvent, EventPatchDto>();
 
-            CreateMap<EventWithPlacesDTO, ModelEvent>()
+            CreateMap<EventWithPlacesDto, ModelEvent>()
                 .ForMember(destination => destination.FreePlace, m => m.MapFrom(source => source.MaxPlace));
-            CreateMap<ModelEvent, EventWithPlacesDTO>();
+            CreateMap<ModelEvent, EventWithPlacesDto>();
 
-            CreateMap<CategoryDTO, Category>();
-            CreateMap<Category, CategoryDTO>();
-            CreateMap<Organizer, OrganizerDTO>();
-            CreateMap<OrganizerDTO, Organizer>();
+            CreateMap<CategoryDto, Category>();
+            CreateMap<Category, CategoryDto>();
+            CreateMap<Organizer, OrganizerDto>();
+            CreateMap<OrganizerDto, Organizer>();
 
             // TODO: Add mapping using repository
-            CreateMap<ReservationDTO, Reservation>();
-            CreateMap<Reservation, ReservationDTO>()
+            CreateMap<ReservationDto, Reservation>();
+            CreateMap<Reservation, ReservationDto>()
                 .ForMember(destination => destination.EventId,
                     m => m.MapFrom(source => source.Event.Id))
                 .ForMember(destination => destination.PlaceId,
                     m => m.MapFrom(source => source.Place.Id));
 
-            CreateMap<PlaceDTO, Place>();
-            CreateMap<Place, PlaceDTO>();
+            CreateMap<PlaceDto, Place>();
+            CreateMap<Place, PlaceDto>();
             
-            CreateMap<Organizer, OrganizerFormDTO>();
-            CreateMap<OrganizerFormDTO, Organizer>();
+            CreateMap<Organizer, OrganizerFormDto>();
+            CreateMap<OrganizerFormDto, Organizer>();
         }
     }
 }

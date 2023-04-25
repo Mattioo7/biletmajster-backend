@@ -31,7 +31,7 @@ public class AccountConfirmationCodeRepository : BaseRepository<AccountConfirmat
             DbSet.Update(confirmationCode);
         }
 
-        await mDbContext.SaveChangesAsync();
+        await MDbContext.SaveChangesAsync();
     }
 
     public async Task<List<AccountConfirmationCode>> GetConfirmationCodesForOrganizerAsync(Organizer organizer)
@@ -39,5 +39,5 @@ public class AccountConfirmationCodeRepository : BaseRepository<AccountConfirmat
         return await DbSet.Where(c => c.Organizer.Id == organizer.Id).ToListAsync();
     }
 
-    protected override DbSet<AccountConfirmationCode> DbSet => mDbContext.AccountConfirmationCodes;
+    protected override DbSet<AccountConfirmationCode> DbSet => MDbContext.AccountConfirmationCodes;
 }

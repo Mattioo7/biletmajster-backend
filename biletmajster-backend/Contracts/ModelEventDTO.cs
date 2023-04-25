@@ -19,7 +19,7 @@ namespace biletmajster_backend.Contracts
     /// 
     /// </summary>
     [DataContract]
-    public partial class ModelEventDTO : IEquatable<ModelEventDTO>
+    public partial class ModelEventDto : IEquatable<ModelEventDto>
     { 
         /// <summary>
         /// Gets or Sets Id
@@ -83,7 +83,7 @@ namespace biletmajster_backend.Contracts
         [Required]
 
         [DataMember(Name="status")]
-        public EventStatusDTO Status { get; set; }
+        public EventStatusDto Status { get; set; }
 
         /// <summary>
         /// Gets or Sets Categories
@@ -91,7 +91,7 @@ namespace biletmajster_backend.Contracts
         [Required]
 
         [DataMember(Name="categories")]
-        public List<CategoryDTO> Categories { get; set; }
+        public List<CategoryDto> Categories { get; set; }
 
         /// <summary>
         /// Gets or Sets FreePlace
@@ -150,7 +150,7 @@ namespace biletmajster_backend.Contracts
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((ModelEventDTO)obj);
+            return obj.GetType() == GetType() && Equals((ModelEventDto)obj);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace biletmajster_backend.Contracts
         /// </summary>
         /// <param name="other">Instance of ModelEvent to be compared</param>
         /// <returns>Boolean</returns>
-        public bool Equals(ModelEventDTO other)
+        public bool Equals(ModelEventDto other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -260,12 +260,12 @@ namespace biletmajster_backend.Contracts
         #region Operators
         #pragma warning disable 1591
 
-        public static bool operator ==(ModelEventDTO left, ModelEventDTO right)
+        public static bool operator ==(ModelEventDto left, ModelEventDto right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(ModelEventDTO left, ModelEventDTO right)
+        public static bool operator !=(ModelEventDto left, ModelEventDto right)
         {
             return !Equals(left, right);
         }
