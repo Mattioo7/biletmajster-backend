@@ -15,7 +15,7 @@ namespace biletmajster_backend.Database.Repositories
         public async Task<bool> AddCategoryAsync(Category category)
         {
             await DbSet.AddAsync(category);
-            return await this.SaveChangesAsync();
+            return await SaveChangesAsync();
         }
         public async Task<Category> GetCategoryByIdAsync(long id)
         {
@@ -37,12 +37,12 @@ namespace biletmajster_backend.Database.Repositories
         public async Task<bool> UpdateCategoryAsync(Category category)
         {
             DbSet.Update(category);
-            return await this.SaveChangesAsync();
+            return await SaveChangesAsync();
         }
         public async Task<bool> UpdateCategoriesAsync(List<Category> category)
         {
             DbSet.UpdateRange(category);
-            return await this.SaveChangesAsync();
+            return await SaveChangesAsync();
         }
     }
 }

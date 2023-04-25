@@ -25,19 +25,19 @@ public class ModelEvent
     public Organizer Organizer { get; set; }
     public ModelEvent()
     {
-        this.Categories = new List<Category>();
-        this.Places = new List<Place>();
-        this.Reservations = new List<Reservation>();
+        Categories = new List<Category>();
+        Places = new List<Place>();
+        Reservations = new List<Reservation>();
     }
     public void UpdateData(ModelEvent e)
     {
-        this.MaxPlace += e.FreePlace - this.FreePlace;
-        this.FreePlace = e.FreePlace;
-        this.StartTime = e.StartTime;
-        this.Title = e.Title;
-        this.Name = e.Name;
-        this.EndTime = e.EndTime;
-        this.PlaceSchema = e.PlaceSchema;
+        MaxPlace += e.FreePlace - FreePlace;
+        FreePlace = e.FreePlace;
+        StartTime = e.StartTime;
+        Title = e.Title;
+        Name = e.Name;
+        EndTime = e.EndTime;
+        PlaceSchema = e.PlaceSchema;
     }
     public List<Place> GetFreePlaces()
     {

@@ -16,6 +16,6 @@ public class Organizer
     public OrganizerAccountStatus Status { get; set; }
     public Organizer()
     {
-        this.Events = new List<ModelEvent>();
+        Events = new List<ModelEvent>();
     }
 }

@@ -15,7 +15,7 @@ public class Place
     public Place() { }
     public Place(ModelEvent modelEvent, long seatNr)
     {
-        this.Event = modelEvent;
+        Event = modelEvent;
         SeatNumber = seatNr;
     }
 }

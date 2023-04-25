@@ -9,7 +9,7 @@ namespace biletmajster_backend.Database.Repositories
         
         public BaseRepository(ApplicationDbContext dbContext)
         {
-            this.MDbContext = dbContext;
+            MDbContext = dbContext;
         }
     }
 }
