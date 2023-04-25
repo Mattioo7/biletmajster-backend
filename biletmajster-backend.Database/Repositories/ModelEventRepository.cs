@@ -6,29 +6,29 @@ namespace biletmajster_backend.Database.Repositories
 {
     public class ModelEventRepository : BaseRepository<ModelEvent>, IModelEventRepository
     {
-        protected override DbSet<ModelEvent> DbSet => mDbContext.ModelEvents;
+        protected override DbSet<ModelEvent> DbSet => MDbContext.ModelEvents;
 
         public ModelEventRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
         }
 
         //Interface Implementation
-        public async Task<bool> AddEventAsync(ModelEvent _event)
+        public async Task<bool> AddEventAsync(ModelEvent @event)
         {
-            await mDbContext.Places.AddRangeAsync(_event.Places);
+            await MDbContext.Places.AddRangeAsync(@event.Places);
             // TODO: Use ICategoryInterface to update!
-            mDbContext.Categories.UpdateRange(_event.Categories);
+            MDbContext.Categories.UpdateRange(@event.Categories);
 
-            mDbContext.Categories.UpdateRange(_event.Categories);
-            mDbContext.Organizers.Update(_event.Organizer);
+            MDbContext.Categories.UpdateRange(@event.Categories);
+            MDbContext.Organizers.Update(@event.Organizer);
 
-            await DbSet.AddAsync(_event);
+            await DbSet.AddAsync(@event);
             return await SaveChangesAsync();
         }
 
         public async Task<bool> SaveChangesAsync()
         {
-            var saved = await mDbContext.SaveChangesAsync();
+            var saved = await MDbContext.SaveChangesAsync();
             return saved > 0;
         }
 
@@ -55,18 +55,18 @@ namespace biletmajster_backend.Database.Repositories
         public async Task<bool> PatchEventAsync(ModelEvent body, List<Place> place)
         {
             if (place.Count > 0)
-                await mDbContext.Places.AddRangeAsync(place);
+                await MDbContext.Places.AddRangeAsync(place);
 
-            mDbContext.Categories.UpdateRange(body.Categories);
+            MDbContext.Categories.UpdateRange(body.Categories);
             DbSet.Update(body);
             return await SaveChangesAsync();
         }
 
         public async Task<bool> DeleteEventAsync(long id)
         {
-            var Event = await GetEventByIdAsync(id);
-            if (Event != null)
-                DbSet.Remove(Event);
+            var @event = await GetEventByIdAsync(id);
+            if (@event != null)
+                DbSet.Remove(@event);
             else
                 return false;
             return await SaveChangesAsync();

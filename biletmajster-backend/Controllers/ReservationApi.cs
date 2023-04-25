@@ -67,7 +67,7 @@ namespace biletmajster_backend.Controllers
         /// Create new reservation
         /// </summary>
         /// <param name="eventId">ID of event</param>
-        /// <param name="placeID">ID of place</param>
+        /// <param name="placeId">ID of place</param>
         /// <response code="201">created</response>
         /// <response code="400">no free place or place taken</response>
         /// <response code="404">event not exist or done</response>
@@ -75,9 +75,9 @@ namespace biletmajster_backend.Controllers
         [Route("/reservation")]
         [ValidateModelState]
         [SwaggerOperation("MakeReservation")]
-        [SwaggerResponse(statusCode: 201, type: typeof(ReservationDTO), description: "created")]
+        [SwaggerResponse(statusCode: 201, type: typeof(ReservationDto), description: "created")]
         public virtual async Task<IActionResult> MakeReservation([FromHeader] [Required] long? eventId,
-            [FromHeader] long? placeID)
+            [FromHeader] long? placeId)
         {
             var e = await _eventsRepository.GetEventByIdAsync(eventId.Value);
 
@@ -96,9 +96,9 @@ namespace biletmajster_backend.Controllers
             }
             try
             {
-                var reservation = await _reservationService.MakeReservationAsync(e, placeID);
+                var reservation = await _reservationService.MakeReservationAsync(e, placeId);
 
-                return StatusCode(201,_mapper.Map<ReservationDTO>(reservation));
+                return StatusCode(201,_mapper.Map<ReservationDto>(reservation));
             }
             catch (Exception exception)
             {

@@ -60,8 +60,8 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("AddEvent")]
-        [SwaggerResponse(statusCode: 201, type: typeof(ModelEventDTO), description: "event created")]
-        public virtual async Task<IActionResult> AddEvent([FromBody] EventFormDTO body)
+        [SwaggerResponse(statusCode: 201, type: typeof(ModelEventDto), description: "event created")]
+        public virtual async Task<IActionResult> AddEvent([FromBody] EventFormDto body)
         {
             _logger.LogDebug($"Add event with name: {body.Name}");
             //Event Model:
@@ -109,7 +109,7 @@ namespace biletmajster_backend.Controllers
 
             if (await _modelEventRepository.AddEventAsync(databaseEvent))
             {
-                return StatusCode(201, _mapper.Map<ModelEventDTO>(databaseEvent));
+                return StatusCode(201, _mapper.Map<ModelEventDto>(databaseEvent));
             }
             else
             {
@@ -152,7 +152,7 @@ namespace biletmajster_backend.Controllers
         [Route("/events/getByCategory")]
         [ValidateModelState]
         [SwaggerOperation("GetByCategory")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDto>), description: "successful operation")]
         public virtual async Task<IActionResult> GetByCategory([FromHeader][Required] long? categoryId)
         {
             if(categoryId == null)
@@ -160,7 +160,7 @@ namespace biletmajster_backend.Controllers
                 return StatusCode(400, new ErrorResponse { Message = "Bad ID" });
             }
             var events = await _modelEventRepository.GetEventsByCategoryAsync(categoryId.Value);
-            return StatusCode(200,_mapper.Map<List<ModelEventDTO>>(events));
+            return StatusCode(200,_mapper.Map<List<ModelEventDto>>(events));
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace biletmajster_backend.Controllers
         [Route("/events/{id}")]
         [ValidateModelState]
         [SwaggerOperation("GetEventById")]
-        [SwaggerResponse(statusCode: 200, type: typeof(EventWithPlacesDTO), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(EventWithPlacesDto), description: "successful operation")]
         public virtual async Task<IActionResult> GetEventById([FromRoute][Required] long? id)
         {
             if (id == null)
@@ -190,7 +190,7 @@ namespace biletmajster_backend.Controllers
                 return StatusCode(404, new ErrorResponse { Message = "Event not found" });
             }
 
-            return StatusCode(200, _mapper.Map<EventWithPlacesDTO>(@event));
+            return StatusCode(200, _mapper.Map<EventWithPlacesDto>(@event));
         }
 
         /// <summary>
@@ -201,12 +201,12 @@ namespace biletmajster_backend.Controllers
         [Route("/events")]
         [ValidateModelState]
         [SwaggerOperation("GetEvents")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDto>), description: "successful operation")]
         public virtual async Task<IActionResult> GetEvents()
         {
             var events = await _modelEventRepository.GetAllEventsAsync();
 
-            return StatusCode(200, events.Select(e => _mapper.Map<ModelEventDTO>(e)).ToList());
+            return StatusCode(200, events.Select(e => _mapper.Map<ModelEventDto>(e)).ToList());
         }
 
         /// <summary>
@@ -219,13 +219,13 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("GetMyEvents")]
-        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDTO>), description: "successful operation")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDto>), description: "successful operation")]
         public virtual async Task<IActionResult> GetMyEvents()
         {
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
             var events = await _modelEventRepository.GetEventsByOrganizerIdAsync(organizer.Id);
-            return StatusCode(200, events.Select(e => _mapper.Map<ModelEventDTO>(e)).ToList());
+            return StatusCode(200, events.Select(e => _mapper.Map<ModelEventDto>(e)).ToList());
         }
 
         /// <summary>
@@ -244,52 +244,52 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("PatchEvent")]
         public virtual async Task<IActionResult> PatchEvent([FromRoute][Required] string id,
-            [FromBody] EventPatchDTO body)
+            [FromBody] EventPatchDto body)
         {
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
-            var EventToUpdate = await _modelEventRepository.GetEventByIdAsync(long.Parse(id));
-            if (EventToUpdate == null)
+            var eventToUpdate = await _modelEventRepository.GetEventByIdAsync(long.Parse(id));
+            if (eventToUpdate == null)
             {
                 return StatusCode(404, new ErrorResponse { Message = $"Event with id: {long.Parse(id)} not found" });
             }
 
-            if (EventToUpdate.Organizer.Id != organizer.Id)
+            if (eventToUpdate.Organizer.Id != organizer.Id)
             {
                 return StatusCode(404,new ErrorResponse
                 { Message = $"Event with id: {long.Parse(id)} does not belong to you" });
             }
 
-            if (EventToUpdate.Status != EventStatus.InFuture)
+            if (eventToUpdate.Status != EventStatus.InFuture)
             {
                 return StatusCode(404, new ErrorResponse
                 { Message = "Event has just started, you can not edit ongoing events" });
             }
 
             List<Place> places = new List<Place>();
-            if (EventToUpdate.GetFreePlaces().Count < body.MaxPlace)
+            if (eventToUpdate.GetFreePlaces().Count < body.MaxPlace)
             {
-                int idx = EventToUpdate.Places.Count;
+                int idx = eventToUpdate.Places.Count;
                 for (int i = idx; i < body.MaxPlace; i++)
                 {
                     var place = new Place()
                     {
                         Free = true,
                         SeatNumber = i + 1,
-                        Event = EventToUpdate
+                        Event = eventToUpdate
                     };
                     places.Add(place);
                 }
             }
 
             List<Category> categoriesList = new List<Category>();
-            foreach (var category in EventToUpdate.Categories)
+            foreach (var category in eventToUpdate.Categories)
             {
-                category.Events.Remove(EventToUpdate);
+                category.Events.Remove(eventToUpdate);
                 categoriesList.Add(category);
             }
 
-            EventToUpdate.Categories.Clear();
+            eventToUpdate.Categories.Clear();
             await _categoriesRepository.UpdateCategoriesAsync(categoriesList);
             if (body.CategoriesIds.Count != 0)
             {
@@ -302,14 +302,14 @@ namespace biletmajster_backend.Controllers
                     }
 
                     categoriesList.Add(currCategory);
-                    currCategory.Events.Add(EventToUpdate);
-                    EventToUpdate.Categories.Add(currCategory);
+                    currCategory.Events.Add(eventToUpdate);
+                    eventToUpdate.Categories.Add(currCategory);
                 }
             }
 
-            EventToUpdate.UpdateData(_mapper.Map<ModelEvent>(body));
-            await _modelEventRepository.PatchEventAsync(EventToUpdate, places);
-            return StatusCode(202,_mapper.Map<ModelEventDTO>(EventToUpdate));
+            eventToUpdate.UpdateData(_mapper.Map<ModelEvent>(body));
+            await _modelEventRepository.PatchEventAsync(eventToUpdate, places);
+            return StatusCode(202,_mapper.Map<ModelEventDto>(eventToUpdate));
         }
     }
 }

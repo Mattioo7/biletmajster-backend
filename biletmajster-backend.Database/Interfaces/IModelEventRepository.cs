@@ -10,7 +10,7 @@ namespace biletmajster_backend.Database.Interfaces
         public Task<bool> PatchEventAsync(ModelEvent body, List<Place> place);
         public Task<bool> DeleteEventAsync(long id);
 
-        public Task<bool> AddEventAsync(ModelEvent _event);
+        public Task<bool> AddEventAsync(ModelEvent @event);
         
         public Task<bool> SaveChangesAsync();
         public Task<bool> ReservePlaceAsync(ModelEvent modelEvent, long? placeId);

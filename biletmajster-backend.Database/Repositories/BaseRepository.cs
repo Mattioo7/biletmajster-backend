@@ -2,14 +2,14 @@
 
 namespace biletmajster_backend.Database.Repositories
 {
-    public abstract class BaseRepository<Entity> where Entity : class
+    public abstract class BaseRepository<TEntity> where TEntity : class
     {
-        protected ApplicationDbContext mDbContext;
-        protected abstract DbSet<Entity> DbSet { get; }
+        protected ApplicationDbContext MDbContext;
+        protected abstract DbSet<TEntity> DbSet { get; }
         
         public BaseRepository(ApplicationDbContext dbContext)
         {
-            this.mDbContext = dbContext;
+            this.MDbContext = dbContext;
         }
     }
 }

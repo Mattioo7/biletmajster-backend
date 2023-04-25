@@ -71,7 +71,7 @@ public class OrganizersRepository : BaseRepository<Organizer>, IOrganizersReposi
 
     public async Task SaveChangesAsync()
     {
-        await mDbContext.SaveChangesAsync();
+        await MDbContext.SaveChangesAsync();
     }
 
     public async Task<Organizer> UpdateOrganizer(Organizer organizerToUpdate)
@@ -81,5 +81,5 @@ public class OrganizersRepository : BaseRepository<Organizer>, IOrganizersReposi
         return ret;
     }
 
-    protected override DbSet<Organizer> DbSet => mDbContext.Organizers;
+    protected override DbSet<Organizer> DbSet => MDbContext.Organizers;
 }
