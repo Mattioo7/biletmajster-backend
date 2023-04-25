@@ -2,6 +2,7 @@
 //Data base:
 
 using System.Text;
+using AutoMapper;
 using biletmajster_backend.Database;
 using biletmajster_backend.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using biletmajster_backend.Configurations;
 using biletmajster_backend.Database.Interfaces;
 using biletmajster_backend.Interfaces;
 using biletmajster_backend.Jwt;
+using biletmajster_backend.Mapper;
 using biletmajster_backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -70,7 +72,13 @@ services.AddScoped<IReservationService,ReservationService>();
 
 
 builder.Services.AddControllers().AddNewtonsoftJson();
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddControllers();
+
+builder.Services.AddSingleton(provider => new MapperConfiguration(cfg =>
+{
+    cfg.AddProfile(new AutoMapperProfile(provider.GetService<IModelEventRepository>()!,
+        provider.GetService<IPlaceRepository>()!));
+}).CreateMapper());
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
