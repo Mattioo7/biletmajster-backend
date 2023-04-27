@@ -133,8 +133,8 @@ namespace biletmajster_backend.Controllers
         [SwaggerOperation("CancelEvent")]
         public virtual async Task<IActionResult> CancelEvent([FromRoute][Required] string id)
         {
-            _logger.LogDebug($"Delete event with id: {id}");
-            if (await _modelEventRepository.DeleteEventAsync(long.Parse(id)))
+            _logger.LogDebug($"Cancel event with id: {id}");
+            if (await _modelEventRepository.CancelEventAsync(long.Parse(id)))
             {
                 return StatusCode(204);
             }

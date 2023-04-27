@@ -8,7 +8,7 @@ namespace biletmajster_backend.Database.Interfaces
         public Task<ModelEvent> GetEventByIdAsync(long id);
         public Task<List<ModelEvent>> GetAllEventsAsync();
         public Task<bool> PatchEventAsync(ModelEvent body, List<Place> place);
-        public Task<bool> DeleteEventAsync(long id);
+        public Task<bool> CancelEventAsync(long id);
 
         public Task<bool> AddEventAsync(ModelEvent @event);
         
