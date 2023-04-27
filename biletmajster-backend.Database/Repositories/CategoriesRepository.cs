@@ -17,7 +17,7 @@ namespace biletmajster_backend.Database.Repositories
             await DbSet.AddAsync(category);
             return await SaveChangesAsync();
         }
-        public async Task<Category> GetCategoryByIdAsync(long id)
+        public async Task<Category?> GetCategoryByIdAsync(long id)
         {
             return await DbSet.FirstOrDefaultAsync(x => x.Id == id);
         }

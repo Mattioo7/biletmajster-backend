@@ -5,7 +5,7 @@ namespace biletmajster_backend.Database.Interfaces
     public interface IModelEventRepository
     {
         //GET:
-        public Task<ModelEvent> GetEventByIdAsync(long id);
+        public Task<ModelEvent?> GetEventByIdAsync(long id);
         public Task<List<ModelEvent>> GetAllEventsAsync();
         public Task<bool> PatchEventAsync(ModelEvent body, List<Place> place);
         public Task<bool> CancelEventAsync(long id);

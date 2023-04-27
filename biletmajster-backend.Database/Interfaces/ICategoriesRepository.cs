@@ -4,7 +4,7 @@ namespace biletmajster_backend.Database.Interfaces
 {
     public interface ICategoriesRepository
     {
-        public Task<Category> GetCategoryByIdAsync(long id);
+        public Task<Category?> GetCategoryByIdAsync(long id);
         public Task<List<Category>> GetAllCategoriesAsync();
         public Task<Category> GetCategoryByNameAsync(string name);
         public Task<bool> AddCategoryAsync(Category category);

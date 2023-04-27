@@ -42,7 +42,7 @@ namespace biletmajster_backend.Database.Repositories
             return DbSet.Where(x => x.Categories.Any(c => c.Id == categoryId)).ToListAsync();
         }
 
-        public async Task<ModelEvent> GetEventByIdAsync(long id)
+        public async Task<ModelEvent?> GetEventByIdAsync(long id)
         {
             return await DbSet.Include(c => c.Categories).Include(p => p.Places).FirstOrDefaultAsync(x => x.Id == id);
         }

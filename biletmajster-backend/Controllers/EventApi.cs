@@ -84,10 +84,11 @@ namespace biletmajster_backend.Controllers
             // Category List:
             // Handling Categories
             List<Category> categoriesList = new List<Category>();
-            foreach (var id in body.CategoriesIds)
+            foreach (var id in body.CategoriesIds.Where(categoryId => categoryId != null)
+                         .Select(categoryId => (int)categoryId!).ToList())
             {
-                var category = await _categoriesRepository.GetCategoryByIdAsync((int)id);
-                if (id == null || category == null)
+                var category = await _categoriesRepository.GetCategoryByIdAsync(id);
+                if (category == null)
                 {
                     ModelState.Clear();
                     ModelState.AddModelError("", $"Can 't find category with id: {id}");
@@ -131,7 +132,7 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("CancelEvent")]
-        public virtual async Task<IActionResult> CancelEvent([FromRoute][Required] string id)
+        public virtual async Task<IActionResult> CancelEvent([FromRoute] [Required] string id)
         {
             _logger.LogDebug($"Cancel event with id: {id}");
             if (await _modelEventRepository.CancelEventAsync(long.Parse(id)))
@@ -139,7 +140,7 @@ namespace biletmajster_backend.Controllers
                 return StatusCode(204);
             }
 
-            return StatusCode(404,new ErrorResponse { Message = "Event not found" });
+            return StatusCode(404, new ErrorResponse { Message = "Event not found" });
         }
 
         /// <summary>
@@ -153,14 +154,15 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetByCategory")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDto>), description: "successful operation")]
-        public virtual async Task<IActionResult> GetByCategory([FromHeader][Required] long? categoryId)
+        public virtual async Task<IActionResult> GetByCategory([FromHeader] [Required] long? categoryId)
         {
-            if(categoryId == null)
+            if (categoryId == null)
             {
                 return StatusCode(400, new ErrorResponse { Message = "Bad ID" });
             }
+
             var events = await _modelEventRepository.GetEventsByCategoryAsync(categoryId.Value);
-            return StatusCode(200,_mapper.Map<List<ModelEventDto>>(events));
+            return StatusCode(200, _mapper.Map<List<ModelEventDto>>(events));
         }
 
         /// <summary>
@@ -176,7 +178,7 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetEventById")]
         [SwaggerResponse(statusCode: 200, type: typeof(EventWithPlacesDto), description: "successful operation")]
-        public virtual async Task<IActionResult> GetEventById([FromRoute][Required] long? id)
+        public virtual async Task<IActionResult> GetEventById([FromRoute] [Required] long? id)
         {
             if (id == null)
             {
@@ -223,6 +225,12 @@ namespace biletmajster_backend.Controllers
         public virtual async Task<IActionResult> GetMyEvents()
         {
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (email == null)
+            {
+                return StatusCode(403, new ErrorResponse { Message = "Invalid session" });
+            }
+
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
             var events = await _modelEventRepository.GetEventsByOrganizerIdAsync(organizer.Id);
             return StatusCode(200, events.Select(e => _mapper.Map<ModelEventDto>(e)).ToList());
@@ -243,11 +251,23 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchEvent")]
-        public virtual async Task<IActionResult> PatchEvent([FromRoute][Required] string id,
+        public virtual async Task<IActionResult> PatchEvent([FromRoute] [Required] string id,
             [FromBody] EventPatchDto body)
         {
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (email == null)
+            {
+                return StatusCode(403, new ErrorResponse { Message = "Invalid session" });
+            }
+
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
+
+            if (organizer == null)
+            {
+                return StatusCode(403, new ErrorResponse { Message = "Invalid session" });
+            }
+
             var eventToUpdate = await _modelEventRepository.GetEventByIdAsync(long.Parse(id));
             if (eventToUpdate == null)
             {
@@ -256,14 +276,14 @@ namespace biletmajster_backend.Controllers
 
             if (eventToUpdate.Organizer.Id != organizer.Id)
             {
-                return StatusCode(404,new ErrorResponse
-                { Message = $"Event with id: {long.Parse(id)} does not belong to you" });
+                return StatusCode(404, new ErrorResponse
+                    { Message = $"Event with id: {long.Parse(id)} does not belong to you" });
             }
 
             if (eventToUpdate.Status != EventStatus.InFuture)
             {
                 return StatusCode(404, new ErrorResponse
-                { Message = "Event has just started, you can not edit ongoing events" });
+                    { Message = "Event has just started, you can not edit ongoing events" });
             }
 
             List<Place> places = new List<Place>();
@@ -293,12 +313,14 @@ namespace biletmajster_backend.Controllers
             await _categoriesRepository.UpdateCategoriesAsync(categoriesList);
             if (body.CategoriesIds.Count != 0)
             {
-                foreach (var categoryId in body.CategoriesIds)
+                foreach (var categoryId in body.CategoriesIds.Where(categoryId => categoryId != null)
+                             .Select(categoryId => (int)categoryId!).ToList())
                 {
-                    var currCategory = await _categoriesRepository.GetCategoryByIdAsync(categoryId.Value);
+                    var currCategory = await _categoriesRepository.GetCategoryByIdAsync(categoryId);
                     if (currCategory == null)
                     {
-                        return StatusCode(404, new ErrorResponse { Message = $"Category with id: {categoryId} not found" });
+                        return StatusCode(404,
+                            new ErrorResponse { Message = $"Category with id: {categoryId} not found" });
                     }
 
                     categoriesList.Add(currCategory);
@@ -309,7 +331,7 @@ namespace biletmajster_backend.Controllers
 
             eventToUpdate.UpdateData(_mapper.Map<ModelEvent>(body));
             await _modelEventRepository.PatchEventAsync(eventToUpdate, places);
-            return StatusCode(202,_mapper.Map<ModelEventDto>(eventToUpdate));
+            return StatusCode(202, _mapper.Map<ModelEventDto>(eventToUpdate));
         }
     }
 }
