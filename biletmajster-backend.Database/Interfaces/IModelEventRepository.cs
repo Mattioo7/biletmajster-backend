@@ -18,5 +18,6 @@ namespace biletmajster_backend.Database.Interfaces
         public Task DeleteReservationAsync(ModelEvent reservationEvent, Place reservationPlace);
         public Task<List<ModelEvent>> GetEventsByOrganizerIdAsync(long organizerId);
         public Task<List<ModelEvent>> GetEventsByCategoryAsync(long categoryId);
+        public Task<ModelEvent> GetEventByPlaceIdAsync(long placeId);
     }
 }
