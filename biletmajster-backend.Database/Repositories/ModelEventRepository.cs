@@ -42,7 +42,7 @@ namespace biletmajster_backend.Database.Repositories
             return DbSet.Where(x => x.Categories.Any(c => c.Id == categoryId)).ToListAsync();
         }
 
-        public async Task<ModelEvent> GetEventByIdAsync(long id)
+        public async Task<ModelEvent?> GetEventByIdAsync(long id)
         {
             return await DbSet.Include(c => c.Categories).Include(p => p.Places).FirstOrDefaultAsync(x => x.Id == id);
         }
@@ -62,14 +62,17 @@ namespace biletmajster_backend.Database.Repositories
             return await SaveChangesAsync();
         }
 
-        public async Task<bool> DeleteEventAsync(long id)
+        public async Task<bool> CancelEventAsync(long id)
         {
             var @event = await GetEventByIdAsync(id);
             if (@event != null)
-                DbSet.Remove(@event);
-            else
-                return false;
-            return await SaveChangesAsync();
+            {
+                @event.Status = EventStatus.Cancelled;
+                DbSet.Update(@event);
+                return await SaveChangesAsync();
+            }
+
+            return false;
         }
 
 
