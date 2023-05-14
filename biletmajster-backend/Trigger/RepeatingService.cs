@@ -6,7 +6,7 @@ namespace biletmajster_backend.Trigger
 {
     public class RepeatingService : BackgroundService
     {
-        private readonly PeriodicTimer _timer = new (TimeSpan.FromSeconds(10));
+        private readonly PeriodicTimer _timer = new (TimeSpan.FromSeconds(1));
 
         private readonly ILogger<RepeatingService> _logger;
         private readonly IMapper _mapper;
@@ -25,7 +25,7 @@ namespace biletmajster_backend.Trigger
                 using(var scope = _serviceProvider.CreateScope())
                 {
                     var scopedService = scope.ServiceProvider.GetRequiredService<IModelEventRepository>();
-                    await scopedService.UpdateEventStatus();
+                    await scopedService.UpdateEventStatus(_logger);
                 }
             }
         }

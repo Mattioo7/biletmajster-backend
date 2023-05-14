@@ -43,20 +43,21 @@ public class ModelEvent
     {
         return Places.Where(x => x.Free.Equals(true)).ToList();
     }
-    public void UpdateStatus()
+    public bool UpdateStatus()
     {
         if (this.Status == EventStatus.Cancelled)
-            return;
+            return false;
         var currtime = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds();
         if (EndTime < currtime)
         {
             this.Status = EventStatus.Done;
-            return;
+            return true;
         }
         if(StartTime < currtime)
         {
             this.Status = EventStatus.Pending;
-            return;
-        }   
+            return true;
+        }
+        return false;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using biletmajster_backend.Domain;
+using Microsoft.Extensions.Logging;
 
 namespace biletmajster_backend.Database.Interfaces
 {
@@ -18,6 +19,6 @@ namespace biletmajster_backend.Database.Interfaces
         public Task DeleteReservationAsync(ModelEvent reservationEvent, Place reservationPlace);
         public Task<List<ModelEvent>> GetEventsByOrganizerIdAsync(long organizerId);
         public Task<List<ModelEvent>> GetEventsByCategoryAsync(long categoryId);
-        public Task<bool> UpdateEventStatus();
+        public Task<bool> UpdateEventStatus(ILogger logger);
     }
 }
