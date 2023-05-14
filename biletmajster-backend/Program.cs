@@ -12,6 +12,7 @@ using biletmajster_backend.Jwt;
 using biletmajster_backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using biletmajster_backend.Trigger;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -70,6 +71,7 @@ services.AddScoped<IReservationService,ReservationService>();
 
 
 builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddHostedService<RepeatingService>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddEndpointsApiExplorer();
@@ -105,3 +107,4 @@ app.UseAuthorization();
 app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();
+

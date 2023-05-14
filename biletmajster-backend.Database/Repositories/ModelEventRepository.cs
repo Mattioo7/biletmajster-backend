@@ -124,5 +124,16 @@ namespace biletmajster_backend.Database.Repositories
             DbSet.Update(reservationEvent);
             return SaveChangesAsync();
         }
+
+        public async Task<bool> UpdateEventStatus()
+        {
+            var events = await GetAllEventsAsync();
+            foreach(var e in events)
+            {
+                e.UpdateStatus();
+            }
+            DbSet.UpdateRange(events);
+            return await SaveChangesAsync();
+        }
     }
 }
