@@ -58,7 +58,7 @@ namespace biletmajster_backend.Controllers
         [Route("/organizer/{id}")]
         [ValidateModelState]
         [SwaggerOperation("Confirm")]
-        public virtual async Task<IActionResult> Confirm([FromRoute][Required]long id, [FromHeader][Required]string code)
+        public virtual async Task<IActionResult> Confirm([FromRoute][Required] long id, [FromHeader][Required] string code)
         {
             _logger.LogDebug($"Confirmation request from organizer with id: {id}, code: {code}");
 
@@ -80,12 +80,12 @@ namespace biletmajster_backend.Controllers
             if (expectedCode != code)
             {
                 _logger.LogDebug($"Invalid confirmation code for organizer with id: {id}");
-                return StatusCode(400,new ErrorResponse { Message = "Confirmation code is wrong" });
+                return StatusCode(400, new ErrorResponse { Message = "Confirmation code is wrong" });
             }
 
             await _organizersRepository.UpdateOrganizerAccountStatusAsync(organizer, OrganizerAccountStatus.Confirmed);
 
-            return StatusCode(201,_mapper.Map<OrganizerDto>(organizer));
+            return StatusCode(201, _mapper.Map<OrganizerDto>(organizer));
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("DeleteOrganizer")]
-        public virtual async Task<IActionResult> DeleteOrganizer([FromRoute][Required]long id)
+        public virtual async Task<IActionResult> DeleteOrganizer([FromRoute][Required] long id)
         {
             _logger.LogDebug($"Delete organizer request with id: {id}");
 
@@ -144,14 +144,14 @@ namespace biletmajster_backend.Controllers
 
             if (email == null)
             {
-                return StatusCode(403,new ErrorResponse { Message = "Invalid session" });
+                return StatusCode(403, new ErrorResponse { Message = "Invalid session" });
             }
 
             _logger.LogDebug($"Get organizer request with email: {email}");
 
             var organizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
 
-            return StatusCode(200,_mapper.Map<OrganizerDto>(organizer));
+            return StatusCode(200, _mapper.Map<OrganizerDto>(organizer));
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("LoginOrganizer")]
         [SwaggerResponse(statusCode: 200, type: typeof(InlineResponse200), description: "successful operation")]
-        public virtual async Task<IActionResult> LoginOrganizer([FromHeader][Required]string email, [FromHeader][Required]string password)
+        public virtual async Task<IActionResult> LoginOrganizer([FromHeader][Required] string email, [FromHeader][Required] string password)
         {
             _logger.LogDebug($"Login organizer request with email: {email}");
 
@@ -174,7 +174,7 @@ namespace biletmajster_backend.Controllers
             {
                 var token = await _organizerIdentityManager.LoginAsync(email, password);
 
-                return StatusCode(200,new InlineResponse200 { SessionToken = token });
+                return StatusCode(200, new InlineResponse200 { SessionToken = token });
             }
             catch (Exception e)
             {
@@ -198,24 +198,24 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchOrganizer")]
-        public virtual async Task<IActionResult> PatchOrganizer([FromRoute][Required]long id, [FromBody]OrganizerPatchDto body)
+        public virtual async Task<IActionResult> PatchOrganizer([FromRoute][Required] long id, [FromBody] OrganizerPatchDto body)
         {
             _logger.LogDebug($"Patch organizer request with id: {id}");
-            
+
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (email == null)
             {
-                return StatusCode(404,new ErrorResponse { Message = "Invalid session" });
+                return StatusCode(404, new ErrorResponse { Message = "Invalid session" });
             }
 
             var originOrganizer = await _organizersRepository.GetOrganizerByEmailAsync(email);
-            
+
             if (originOrganizer == null)
             {
                 return StatusCode(404, new ErrorResponse { Message = "Invalid session" });
             }
-            
+
             if (originOrganizer.Id != id)
             {
                 return StatusCode(404, new ErrorResponse { Message = "You cannot patch other organizer" });
@@ -237,7 +237,7 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("SignUp")]
         [SwaggerResponse(statusCode: 201, type: typeof(OrganizerDto), description: "successful operation")]
-        public virtual async Task<IActionResult> SignUp([FromBody]OrganizerFormDto body)
+        public virtual async Task<IActionResult> SignUp([FromBody] OrganizerFormDto body)
         {
             _logger.LogDebug($"SignUp request with email: {body.Email}, name: {body.Name}");
 
@@ -260,7 +260,7 @@ namespace biletmajster_backend.Controllers
             await _confirmationService.SendConfirmationRequestAsync(newOrganizer);
 
             // return organizer 
-            return StatusCode(201,new OrganizerDto
+            return StatusCode(201, new OrganizerDto
             {
                 Id = newOrganizer.Id,
                 Name = body.Name,

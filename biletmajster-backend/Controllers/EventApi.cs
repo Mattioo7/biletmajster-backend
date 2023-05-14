@@ -132,7 +132,7 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("CancelEvent")]
-        public virtual async Task<IActionResult> CancelEvent([FromRoute] [Required] string id)
+        public virtual async Task<IActionResult> CancelEvent([FromRoute][Required] string id)
         {
             _logger.LogDebug($"Cancel event with id: {id}");
             if (await _modelEventRepository.CancelEventAsync(long.Parse(id)))
@@ -154,7 +154,7 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetByCategory")]
         [SwaggerResponse(statusCode: 200, type: typeof(List<ModelEventDto>), description: "successful operation")]
-        public virtual async Task<IActionResult> GetByCategory([FromHeader] [Required] long? categoryId)
+        public virtual async Task<IActionResult> GetByCategory([FromHeader][Required] long? categoryId)
         {
             if (categoryId == null)
             {
@@ -178,7 +178,7 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("GetEventById")]
         [SwaggerResponse(statusCode: 200, type: typeof(EventWithPlacesDto), description: "successful operation")]
-        public virtual async Task<IActionResult> GetEventById([FromRoute] [Required] long? id)
+        public virtual async Task<IActionResult> GetEventById([FromRoute][Required] long? id)
         {
             if (id == null)
             {
@@ -251,7 +251,7 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchEvent")]
-        public virtual async Task<IActionResult> PatchEvent([FromRoute] [Required] string id,
+        public virtual async Task<IActionResult> PatchEvent([FromRoute][Required] string id,
             [FromBody] EventPatchDto body)
         {
             var email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -274,16 +274,16 @@ namespace biletmajster_backend.Controllers
                 return StatusCode(404, new ErrorResponse { Message = $"Event with id: {long.Parse(id)} not found" });
             }
 
-            if (eventToUpdate.Organizer.Id != organizer.Id)
+            if (organizer.Id != eventToUpdate.Organizer.Id)
             {
                 return StatusCode(404, new ErrorResponse
-                    { Message = $"Event with id: {long.Parse(id)} does not belong to you" });
+                { Message = $"Event with id: {long.Parse(id)} does not belong to you" });
             }
 
             if (eventToUpdate.Status != EventStatus.InFuture)
             {
                 return StatusCode(404, new ErrorResponse
-                    { Message = "Event has just started, you can not edit ongoing events" });
+                { Message = "Event has just started, you can not edit ongoing events" });
             }
 
             List<Place> places = new List<Place>();
