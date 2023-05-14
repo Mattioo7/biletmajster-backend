@@ -1,6 +1,7 @@
 ﻿using biletmajster_backend.Domain;
 using biletmajster_backend.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace biletmajster_backend.Database.Repositories
 {
@@ -123,6 +124,18 @@ namespace biletmajster_backend.Database.Repositories
             reservationEvent.FreePlace++;
             DbSet.Update(reservationEvent);
             return SaveChangesAsync();
+        }
+
+        public async Task<bool> UpdateEventStatus(ILogger logger)
+        {
+            var events = await GetAllEventsAsync();
+            foreach(var e in events)
+            {
+                if (e.UpdateStatus())
+                    logger.LogDebug($"Event {e.Name} with id: {e.Id} changed status.");
+            }
+            DbSet.UpdateRange(events);
+            return await SaveChangesAsync();
         }
     }
 }
