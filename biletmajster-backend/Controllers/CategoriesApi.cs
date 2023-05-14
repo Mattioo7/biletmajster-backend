@@ -37,7 +37,7 @@ namespace biletmajster_backend.Controllers
         private readonly IMapper _mapper;
         private readonly ILogger<CategoriesApiController> _logger;
 
-        public CategoriesApiController(ICategoriesRepository categoriesRepository, IMapper mapper,ILogger<CategoriesApiController> logger)
+        public CategoriesApiController(ICategoriesRepository categoriesRepository, IMapper mapper, ILogger<CategoriesApiController> logger)
         {
             _categoriesRepository = categoriesRepository;
             _mapper = mapper;
@@ -57,7 +57,7 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("AddCategories")]
         [SwaggerResponse(statusCode: 201, type: typeof(CategoryDto), description: "created")]
-        public virtual async Task<IActionResult> AddCategories([FromHeader][Required]string categoryName)
+        public virtual async Task<IActionResult> AddCategories([FromHeader][Required] string categoryName)
         {
             _logger.LogDebug($"Add Category with name: {categoryName}");
 
@@ -65,13 +65,12 @@ namespace biletmajster_backend.Controllers
             {
                 Name = categoryName
             });
-
             if (await _categoriesRepository.GetCategoryByNameAsync(categoryName) != null)
             {
                 ModelState.Clear();
                 ModelState.AddModelError("", "Category already exists");
                 _logger.LogDebug($"Category with name: {categoryName} already exists");
-                return StatusCode(400, ModelState);
+                return StatusCode(500, ModelState);
             }
 
             if (await _categoriesRepository.AddCategoryAsync(tmp))
@@ -83,7 +82,7 @@ namespace biletmajster_backend.Controllers
                 ModelState.Clear();
                 ModelState.AddModelError("", "Something went wrong while savin");
                 _logger.LogDebug($"Category with name: {categoryName} was not added, something went wrong");
-                return StatusCode(400, ModelState);
+                return StatusCode(600, ModelState);
             }
         }
 
@@ -104,7 +103,7 @@ namespace biletmajster_backend.Controllers
             {
                 resultList.Add(_mapper.Map<CategoryDto>(category));
             }
-            return StatusCode(200,resultList);
+            return StatusCode(200, resultList);
         }
     }
 }

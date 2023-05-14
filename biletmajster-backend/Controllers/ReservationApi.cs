@@ -50,7 +50,7 @@ namespace biletmajster_backend.Controllers
         [Route("/reservation")]
         [ValidateModelState]
         [SwaggerOperation("DeleteReservation")]
-        public virtual async Task<IActionResult> DeleteReservation([FromHeader] [Required] string reservationToken)
+        public virtual async Task<IActionResult> DeleteReservation([FromHeader][Required] string reservationToken)
         {
             try
             {
@@ -76,7 +76,7 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("MakeReservation")]
         [SwaggerResponse(statusCode: 201, type: typeof(ReservationDto), description: "created")]
-        public virtual async Task<IActionResult> MakeReservation([FromHeader] [Required] long? eventId,
+        public virtual async Task<IActionResult> MakeReservation([FromHeader][Required] long? eventId,
             [FromHeader] long? placeId)
         {
             var e = await _eventsRepository.GetEventByIdAsync(eventId.Value);
@@ -90,7 +90,7 @@ namespace biletmajster_backend.Controllers
             {
                 return StatusCode(400, new ErrorResponse { Message = "No free places" });
             }
-            if(e.Status == EventStatus.Done || e.Status == EventStatus.Cancelled)
+            if (e.Status == EventStatus.Done || e.Status == EventStatus.Cancelled)
             {
                 return StatusCode(404, new ErrorResponse { Message = "Event has finished" });
             }
@@ -98,7 +98,7 @@ namespace biletmajster_backend.Controllers
             {
                 var reservation = await _reservationService.MakeReservationAsync(e, placeId);
 
-                return StatusCode(201,_mapper.Map<ReservationDto>(reservation));
+                return StatusCode(201, _mapper.Map<ReservationDto>(reservation));
             }
             catch (Exception exception)
             {
