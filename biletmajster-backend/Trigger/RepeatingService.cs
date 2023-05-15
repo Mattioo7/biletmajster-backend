@@ -6,7 +6,7 @@ namespace biletmajster_backend.Trigger
 {
     public class RepeatingService : BackgroundService
     {
-        private readonly PeriodicTimer _timer = new (TimeSpan.FromSeconds(1));
+        private readonly PeriodicTimer _timer = new (TimeSpan.FromHours(1)); // 1 hour, to not strain the database
 
         private readonly ILogger<RepeatingService> _logger;
         private readonly IMapper _mapper;
