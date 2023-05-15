@@ -198,6 +198,7 @@ namespace biletmajster_backend.Controllers
         [Authorize]
         [ValidateModelState]
         [SwaggerOperation("PatchOrganizer")]
+
         public virtual async Task<IActionResult> PatchOrganizer([FromRoute][Required] long id, [FromBody] OrganizerPatchDto body)
         {
             _logger.LogDebug($"Patch organizer request with id: {id}");
@@ -237,7 +238,9 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("SignUp")]
         [SwaggerResponse(statusCode: 201, type: typeof(OrganizerDto), description: "successful operation")]
+
         public virtual async Task<IActionResult> SignUp([FromBody] OrganizerFormDto body)
+
         {
             _logger.LogDebug($"SignUp request with email: {body.Email}, name: {body.Name}");
 
@@ -261,6 +264,7 @@ namespace biletmajster_backend.Controllers
 
             // return organizer 
             return StatusCode(201, new OrganizerDto
+
             {
                 Id = newOrganizer.Id,
                 Name = body.Name,
