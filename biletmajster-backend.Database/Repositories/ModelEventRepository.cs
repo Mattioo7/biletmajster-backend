@@ -1,6 +1,7 @@
 ﻿using biletmajster_backend.Domain;
 using biletmajster_backend.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace biletmajster_backend.Database.Repositories
 {
@@ -42,7 +43,7 @@ namespace biletmajster_backend.Database.Repositories
             return DbSet.Where(x => x.Categories.Any(c => c.Id == categoryId)).ToListAsync();
         }
 
-        public async Task<ModelEvent> GetEventByIdAsync(long id)
+        public async Task<ModelEvent?> GetEventByIdAsync(long id)
         {
             return await DbSet.Include(c => c.Categories).Include(p => p.Places).FirstOrDefaultAsync(x => x.Id == id);
         }
@@ -62,14 +63,17 @@ namespace biletmajster_backend.Database.Repositories
             return await SaveChangesAsync();
         }
 
-        public async Task<bool> DeleteEventAsync(long id)
+        public async Task<bool> CancelEventAsync(long id)
         {
             var @event = await GetEventByIdAsync(id);
             if (@event != null)
-                DbSet.Remove(@event);
-            else
-                return false;
-            return await SaveChangesAsync();
+            {
+                @event.Status = EventStatus.Cancelled;
+                DbSet.Update(@event);
+                return await SaveChangesAsync();
+            }
+
+            return false;
         }
 
 
@@ -120,6 +124,18 @@ namespace biletmajster_backend.Database.Repositories
             reservationEvent.FreePlace++;
             DbSet.Update(reservationEvent);
             return SaveChangesAsync();
+        }
+
+        public async Task<bool> UpdateEventStatus(ILogger logger)
+        {
+            var events = await GetAllEventsAsync();
+            foreach(var e in events)
+            {
+                if (e.UpdateStatus())
+                    logger.LogDebug($"Event {e.Name} with id: {e.Id} changed status.");
+            }
+            DbSet.UpdateRange(events);
+            return await SaveChangesAsync();
         }
     }
 }
