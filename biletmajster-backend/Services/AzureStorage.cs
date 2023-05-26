@@ -13,8 +13,8 @@ public class AzureStorage : IStorage
 
     public AzureStorage(IConfiguration configuration, ILogger<AzureStorage> logger)
     {
-        _connectionString = configuration["AzureBlobStorage:ConnectionString"];
-        _containerName = configuration["AzureBlobStorage:ContainerName"];
+        _connectionString = configuration["BlobStorageConnectionString"];
+        _containerName = "media";
         _logger = logger;
     }
 
@@ -99,5 +99,24 @@ public class AzureStorage : IStorage
 
         // File does not exist, return null and handle that in requesting method
         return null;
+    }
+
+    public async Task<bool> DeleteFileAsync(string key)
+    {
+        BlobContainerClient client = new BlobContainerClient(_connectionString, _containerName);
+        try
+        {
+            BlobClient file = client.GetBlobClient(key);
+            await file.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            return true;
+        }
+        catch (RequestFailedException ex)
+            when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+        {
+            // Log error to console
+            _logger.LogError($"File {key} was not found.");
+        }
+        // File does not exist, return null and handle that in requesting method
+        return false;
     }
 }

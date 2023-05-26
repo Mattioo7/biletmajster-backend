@@ -27,4 +27,5 @@ public interface IStorage
     public Task<BlobResponseDto> UploadFileAsync(IFormFile file, string key);
 
     public  Task<BlobDto> DownloadFileAsync(string key);
+    public Task<bool> DeleteFileAsync(string key);
 }

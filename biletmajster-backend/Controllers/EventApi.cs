@@ -19,6 +19,7 @@ using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using biletmajster_backend.Interfaces;
 
 namespace biletmajster_backend.Controllers
 {
@@ -34,11 +35,14 @@ namespace biletmajster_backend.Controllers
         private readonly IPlaceRepository _placeRepository;
         private readonly IOrganizersRepository _organizersRepository;
         private readonly ILogger<EventApiController> _logger;
+        private readonly IStorage _blobStorage;
+        private readonly IEventPhotosRepository _eventPhotosRepository;
 
         public EventApiController(IMapper mapper, IModelEventRepository modelEventRepository,
             ICategoriesRepository categoriesRepository,
-            IPlaceRepository placeRepository, ILogger<EventApiController>
-                logger, IOrganizersRepository organizersRepository)
+            IPlaceRepository placeRepository, ILogger<EventApiController> logger,
+            IOrganizersRepository organizersRepository, IStorage storage,
+            IEventPhotosRepository eventPhotosRepository)
         {
             _mapper = mapper;
             _modelEventRepository = modelEventRepository;
@@ -46,6 +50,8 @@ namespace biletmajster_backend.Controllers
             _placeRepository = placeRepository;
             _logger = logger;
             _organizersRepository = organizersRepository;
+            _blobStorage = storage;
+            _eventPhotosRepository = eventPhotosRepository;
         }
 
         /// <summary>
@@ -141,6 +147,129 @@ namespace biletmajster_backend.Controllers
             }
 
             return StatusCode(404, new ErrorResponse { Message = "Event not found" });
+        }
+
+        /// <summary>
+        /// Cancel event
+        /// </summary>
+        /// <param name="id">id of Event</param>
+        /// <param name="path">path of photo</param>
+        /// <response code="204">deleted</response>
+        /// <response code="403">invalid session</response>
+        /// <response code="404">id or path not found</response>
+        [HttpDelete]
+        [Route("/events/{id}/photos")]
+        [Authorize]
+        [ValidateModelState]
+        [SwaggerOperation("DeletePhoto")]
+        public virtual async Task<IActionResult> DeletePhoto([FromRoute][Required] string id, [FromHeader][Required()] string path)
+        {
+            var @event = await _modelEventRepository.GetEventByIdAsync(long.Parse(id));
+            if (@event == null)
+            {
+                _logger.LogDebug($"Event with id {id} not found");
+                return StatusCode(404, new ErrorResponse { Message = "Event not found" });
+            }
+            var photo = @event.EventPhotos.Find(x => x.DownloadLink == path);
+            if (photo == null)
+            {
+                _logger.LogDebug($"Can not find image with link: [{path}] belong to event with id:{id} in DataBase");
+                return StatusCode(404, new ErrorResponse { Message = "Path not found in DataBase" });
+            }
+            @event.EventPhotos.Remove(photo);
+            if (!await _blobStorage.DeleteFileAsync(photo.BlobName))
+            {
+                _logger.LogDebug($"Can not find image with link: [{path}] belong to event with id:{id}");
+                return StatusCode(404, new ErrorResponse { Message = "Path not found in BlobStorage" });
+            }
+            if (!await _eventPhotosRepository.DeletePhoto(photo))
+            {
+                return StatusCode(403, new ErrorResponse { Message = "invalid session" });
+            }
+            if (!await _modelEventRepository.UpdateEvent(@event))
+            {
+                return StatusCode(403, new ErrorResponse { Message = "invalid session" });
+            }
+            return StatusCode(204);
+        }
+
+        /// <summary>
+        /// Get list of photo of event
+        /// </summary>
+        /// <remarks>Returns a list of photo paths</remarks>
+        /// <param name="id">ID of event to return</param>
+        /// <response code="200">successful operation</response>
+        /// <response code="400">Invalid ID supplied</response>
+        /// <response code="404">Event not found</response>
+        [HttpGet]
+        [Route("/events/{id}/photos")]
+        [ValidateModelState]
+        [SwaggerOperation("GetPhoto")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<string>), description: "successful operation")]
+        public virtual async Task<IActionResult> GetPhoto([FromRoute][Required] long? id)
+        {
+            if (id == null)
+            {
+                return StatusCode(400, new ErrorResponse { Message = "Invalid ID supplied" });
+            }
+            var @event = await _modelEventRepository.GetEventByIdAsync((long)id);
+            if (@event == null)
+            {
+                _logger.LogDebug($"Event with id {id} not found");
+                return StatusCode(404, new ErrorResponse { Message = "Event not found" });
+            }
+            var list = new List<string>();
+            @event.EventPhotos.ForEach(x => list.Add(x.DownloadLink));
+            return StatusCode(200, list);
+        }
+        /// <summary>
+        /// patch existing event
+        /// </summary>
+        /// <param name="id">id of Event</param>
+        /// <param name="path">path of photo</param>
+        /// <response code="200">path added</response>
+        /// <response code="400">path already exist</response>
+        /// <response code="403">invalid session</response>
+        /// <response code="404">id not found</response>
+        [HttpPost]
+        [Route("/events/{id}/photos")]
+        [Authorize]
+        [ValidateModelState]
+        [SwaggerOperation("PutPhoto")]
+        [SwaggerResponse(statusCode: 200, type: typeof(EventPhotosDTO), description: "successful operation")]
+        public virtual async Task<IActionResult> PutPhoto([FromRoute][Required] string id, [FromForm][Required] IFormFile file)
+        {
+            var @event = await _modelEventRepository.GetEventByIdAsync(long.Parse(id));
+            if (@event == null)
+            {
+                _logger.LogDebug($"Event with id: {id} not found");
+                return StatusCode(404, new ErrorResponse { Message = "Event not found" });
+            }
+            var BlobName = Guid.NewGuid().ToString("N") + System.IO.Path.GetExtension(file.FileName);
+            var Blobresult = await _blobStorage.UploadFileAsync(file, BlobName);
+            if (Blobresult.Error)
+            {
+                _logger.LogDebug($"Can not connect to Blob");
+                return StatusCode(403, new ErrorResponse { Message = "Invalid Session" });
+            }
+
+            var PhotoDb = new EventPhotos
+            {
+                ModelEvent = @event,
+                DownloadLink = Blobresult.Blob.Uri,
+                BlobName = BlobName
+            };
+            if (await _eventPhotosRepository.GetPhotoByLink(PhotoDb.DownloadLink) != null)
+            {
+                return StatusCode(400, new ErrorResponse { Message = "File with this path already exists" });
+            }
+            @event.EventPhotos.Add(PhotoDb);
+            if (!await _eventPhotosRepository.AddPhotoAsync(PhotoDb))
+            {
+                return StatusCode(400, new ErrorResponse { Message = "Can not save file in database" });
+            }
+            await _modelEventRepository.UpdateEvent(@event);
+            return StatusCode(200, _mapper.Map<EventPhotosDTO>(PhotoDb));
         }
 
         /// <summary>

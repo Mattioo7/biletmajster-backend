@@ -45,7 +45,7 @@ namespace biletmajster_backend.Database.Repositories
 
         public async Task<ModelEvent?> GetEventByIdAsync(long id)
         {
-            return await DbSet.Include(c => c.Categories).Include(p => p.Places).FirstOrDefaultAsync(x => x.Id == id);
+            return await DbSet.Include(c => c.Categories).Include(p => p.Places).Include(p=>p.EventPhotos).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<List<ModelEvent>> GetAllEventsAsync()
@@ -135,6 +135,12 @@ namespace biletmajster_backend.Database.Repositories
                     logger.LogDebug($"Event {e.Name} with id: {e.Id} changed status.");
             }
             DbSet.UpdateRange(events);
+            return await SaveChangesAsync();
+        }
+
+        public async Task<bool> UpdateEvent(ModelEvent @event)
+        {
+            DbSet.Update(@event);
             return await SaveChangesAsync();
         }
     }
