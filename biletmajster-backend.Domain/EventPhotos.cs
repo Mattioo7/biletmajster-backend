@@ -13,9 +13,8 @@ namespace biletmajster_backend.Domain
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
-
         public string DownloadLink { get; set; }
-
+        public string BlobName { get; set; }
         public ModelEvent ModelEvent { get; set; }
     }
 }

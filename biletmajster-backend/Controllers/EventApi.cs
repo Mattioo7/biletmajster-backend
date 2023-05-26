@@ -173,10 +173,15 @@ namespace biletmajster_backend.Controllers
             var photo = @event.EventPhotos.Find(x => x.DownloadLink == path);
             if (photo == null)
             {
-                _logger.LogDebug($"Can not find image with link: [{path}] belong to event with id:{id}");
-                return StatusCode(404, new ErrorResponse { Message = "Path not found" });
+                _logger.LogDebug($"Can not find image with link: [{path}] belong to event with id:{id} in DataBase");
+                return StatusCode(404, new ErrorResponse { Message = "Path not found in DataBase" });
             }
             @event.EventPhotos.Remove(photo);
+            if (!await _blobStorage.DeleteFileAsync(photo.BlobName))
+            {
+                _logger.LogDebug($"Can not find image with link: [{path}] belong to event with id:{id}");
+                return StatusCode(404, new ErrorResponse { Message = "Path not found in BlobStorage" });
+            }
             if (!await _eventPhotosRepository.DeletePhoto(photo))
             {
                 return StatusCode(403, new ErrorResponse { Message = "invalid session" });
@@ -240,16 +245,19 @@ namespace biletmajster_backend.Controllers
                 _logger.LogDebug($"Event with id: {id} not found");
                 return StatusCode(404, new ErrorResponse { Message = "Event not found" });
             }
-            var Blobresult = await _blobStorage.UploadFileAsync(file, file.FileName);
+            var BlobName = Guid.NewGuid().ToString("N") + System.IO.Path.GetExtension(file.FileName);
+            var Blobresult = await _blobStorage.UploadFileAsync(file, BlobName);
             if (Blobresult.Error)
             {
                 _logger.LogDebug($"Can not connect to Blob");
                 return StatusCode(403, new ErrorResponse { Message = "Invalid Session" });
             }
+
             var PhotoDb = new EventPhotos
             {
                 ModelEvent = @event,
-                DownloadLink = Blobresult.Blob.Uri
+                DownloadLink = Blobresult.Blob.Uri,
+                BlobName = BlobName
             };
             if (await _eventPhotosRepository.GetPhotoByLink(PhotoDb.DownloadLink) != null)
             {

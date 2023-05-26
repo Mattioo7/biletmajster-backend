@@ -100,4 +100,23 @@ public class AzureStorage : IStorage
         // File does not exist, return null and handle that in requesting method
         return null;
     }
+
+    public async Task<bool> DeleteFileAsync(string key)
+    {
+        BlobContainerClient client = new BlobContainerClient(_connectionString, _containerName);
+        try
+        {
+            BlobClient file = client.GetBlobClient(key);
+            await file.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            return true;
+        }
+        catch (RequestFailedException ex)
+            when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+        {
+            // Log error to console
+            _logger.LogError($"File {key} was not found.");
+        }
+        // File does not exist, return null and handle that in requesting method
+        return false;
+    }
 }
