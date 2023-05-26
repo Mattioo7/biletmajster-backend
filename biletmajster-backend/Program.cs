@@ -47,6 +47,7 @@ builder.Services.AddSingleton(
 
 // Scoped
 builder.Services.AddScoped<ICustomMailService, MailService>();
+builder.Services.AddScoped<IStorage, AzureStorage>();
 
 services.AddDbContext<ApplicationDbContext>(x => x.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("biletmajster-backend")));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -66,6 +67,7 @@ services.AddScoped<IPlaceRepository, PlaceRepository>();
 services.AddScoped<IPlaceRepository,PlaceRepository>();
 services.AddScoped<IReservationRepository,ReservationRepository>();
 services.AddScoped<IReservationService,ReservationService>();
+services.AddScoped<IEventPhotosRepository, EventPhotosRepository>();
 
 // Data Base Section:
 

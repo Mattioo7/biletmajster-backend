@@ -44,6 +44,8 @@ namespace biletmajster_backend.Mapper
             
             CreateMap<Organizer, OrganizerFormDto>();
             CreateMap<OrganizerFormDto, Organizer>();
+
+            CreateMap<EventPhotos,EventPhotosDTO>().ForMember(destination => destination.EventId, m => m.MapFrom(source => source.ModelEvent.Id));
         }
     }
 }

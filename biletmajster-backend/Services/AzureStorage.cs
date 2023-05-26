@@ -13,8 +13,8 @@ public class AzureStorage : IStorage
 
     public AzureStorage(IConfiguration configuration, ILogger<AzureStorage> logger)
     {
-        _connectionString = configuration["AzureBlobStorage:ConnectionString"];
-        _containerName = configuration["AzureBlobStorage:ContainerName"];
+        _connectionString = configuration["BlobStorageConnectionString"];
+        _containerName = "media";
         _logger = logger;
     }
 

@@ -10,6 +10,7 @@ namespace biletmajster_backend.Database
         public DbSet<Organizer> Organizers { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Place> Places { get; set; }
+        public DbSet<EventPhotos> EventsPhotos { get; set; }
         public DbSet<AccountConfirmationCode> AccountConfirmationCodes { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
