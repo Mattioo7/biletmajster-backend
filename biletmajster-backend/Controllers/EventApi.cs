@@ -232,7 +232,7 @@ namespace biletmajster_backend.Controllers
         [ValidateModelState]
         [SwaggerOperation("PutPhoto")]
         [SwaggerResponse(statusCode: 200, type: typeof(EventPhotosDTO), description: "successful operation")]
-        public virtual async Task<IActionResult> PutPhoto([FromRoute][Required] string id, [FromForm][Required()] FileFormDTO file)
+        public virtual async Task<IActionResult> PutPhoto([FromRoute][Required] string id, [FromForm][Required] IFormFile file)
         {
             var @event = await _modelEventRepository.GetEventByIdAsync(long.Parse(id));
             if (@event == null)
@@ -240,7 +240,7 @@ namespace biletmajster_backend.Controllers
                 _logger.LogDebug($"Event with id: {id} not found");
                 return StatusCode(404, new ErrorResponse { Message = "Event not found" });
             }
-            var Blobresult = await _blobStorage.UploadFileAsync(file.File, file.File.FileName);
+            var Blobresult = await _blobStorage.UploadFileAsync(file, file.FileName);
             if (Blobresult.Error)
             {
                 _logger.LogDebug($"Can not connect to Blob");
