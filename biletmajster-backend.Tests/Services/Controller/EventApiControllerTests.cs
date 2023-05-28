@@ -3,9 +3,11 @@ using biletmajster_backend.Contracts;
 using biletmajster_backend.Controllers;
 using biletmajster_backend.Database.Interfaces;
 using biletmajster_backend.Domain;
+using biletmajster_backend.Interfaces;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -29,12 +31,17 @@ namespace biletmajster_backend.Tests.Services.Controller
         private readonly ILogger<EventApiController> _logger;
         private readonly IMapper _mapper;
 
+        private readonly IStorage _blobStorage;
+        private readonly IEventPhotosRepository _eventPhotosRepository;
+
         public EventApiControllerTests()
         {
             _modelEventRepository = A.Fake<IModelEventRepository>();
             _categoriesRepository = A.Fake<ICategoriesRepository>();
             _placeRepository = A.Fake<IPlaceRepository>();
             _organizersRepository = A.Fake<IOrganizersRepository>();
+            _blobStorage= A.Fake<IStorage>();
+            _eventPhotosRepository= A.Fake<IEventPhotosRepository>();
 
             _mapper = A.Fake<IMapper>();
             _logger = A.Fake<ILogger<EventApiController>>();
@@ -58,7 +65,7 @@ namespace biletmajster_backend.Tests.Services.Controller
             A.CallTo(() => _mapper.Map<ModelEventDto>(modelevent)).Returns(A.Fake<ModelEventDto>());
 
 
-            EventApiController controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository);
+            EventApiController controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository,_blobStorage,_eventPhotosRepository);
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
@@ -80,7 +87,7 @@ namespace biletmajster_backend.Tests.Services.Controller
         {
             string id = "32432";
             A.CallTo(() => _modelEventRepository.CancelEventAsync(long.Parse(id))).Returns(true);
-            var controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository);
+            var controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository, _blobStorage, _eventPhotosRepository);
             var result = await controller.CancelEvent(id);
 
             result.Should().NotBeNull();
@@ -91,7 +98,7 @@ namespace biletmajster_backend.Tests.Services.Controller
         public async void CategoriesApiController_GetByCategory_ReturnOk()
         {
             A.CallTo(() => _modelEventRepository.GetEventsByCategoryAsync(1234)).Returns(A.Fake<List<ModelEvent>>());
-            var controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository);
+            var controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository, _blobStorage, _eventPhotosRepository);
             var result = await controller.GetByCategory(213);
 
             result.Should().NotBeNull();
@@ -102,7 +109,7 @@ namespace biletmajster_backend.Tests.Services.Controller
         public async void CategoriesApiController_GetEventById_ReturnOk()
         {
             A.CallTo(() => _modelEventRepository.GetEventByIdAsync(1234)).Returns(A.Fake<ModelEvent>());
-            var controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository);
+            var controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository, _blobStorage, _eventPhotosRepository);
             var result = await controller.GetEventById(213);
 
             result.Should().NotBeNull();
@@ -113,7 +120,7 @@ namespace biletmajster_backend.Tests.Services.Controller
         public async void CategoriesApiController_GetEvents_ReturnOk()
         {
             A.CallTo(() => _modelEventRepository.GetAllEventsAsync()).Returns(A.Fake<List<ModelEvent>>());
-            var controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository);
+            var controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository, _blobStorage, _eventPhotosRepository);
             var result = await controller.GetEvents();
 
             result.Should().NotBeNull();
@@ -130,7 +137,7 @@ namespace biletmajster_backend.Tests.Services.Controller
             A.CallTo(() => _organizersRepository.GetOrganizerByEmailAsync(A<string>._)).Returns(A.Fake<Organizer>());
             A.CallTo(() => _modelEventRepository.GetEventsByOrganizerIdAsync(123)).Returns(A.Fake<List<ModelEvent>>());
 
-            var controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository);
+            var controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository, _blobStorage, _eventPhotosRepository);
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
             var result = await controller.GetMyEvents();
@@ -158,7 +165,7 @@ namespace biletmajster_backend.Tests.Services.Controller
             A.CallTo(() => _categoriesRepository.UpdateCategoriesAsync(A.Fake<List<Category>>())).Returns(Task.FromResult(true));
             A.CallTo(() => _modelEventRepository.PatchEventAsync(A.Fake<ModelEvent>(), A<List<Place>>._)).Returns(Task.FromResult(true));
 
-            EventApiController controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository);
+            EventApiController controller = new EventApiController(_mapper, _modelEventRepository, _categoriesRepository, _placeRepository, _logger, _organizersRepository, _blobStorage, _eventPhotosRepository);
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using biletmajster_backend.Database;
@@ -11,9 +12,11 @@ using biletmajster_backend.Database;
 namespace biletmajster_backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230526103614_PhotosTable")]
+    partial class PhotosTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -87,22 +90,18 @@ namespace biletmajster_backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("BlobName")
+                    b.Property<string>("Key")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("DownloadLink")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("ModelEventId")
+                    b.Property<long?>("ModelEventId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ModelEventId");
 
-                    b.ToTable("EventsPhotos");
+                    b.ToTable("EventPhotos");
                 });
 
             modelBuilder.Entity("biletmajster_backend.Domain.ModelEvent", b =>
@@ -268,13 +267,9 @@ namespace biletmajster_backend.Migrations
 
             modelBuilder.Entity("biletmajster_backend.Domain.EventPhotos", b =>
                 {
-                    b.HasOne("biletmajster_backend.Domain.ModelEvent", "ModelEvent")
-                        .WithMany("EventPhotos")
-                        .HasForeignKey("ModelEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ModelEvent");
+                    b.HasOne("biletmajster_backend.Domain.ModelEvent", null)
+                        .WithMany("EventsPhotos")
+                        .HasForeignKey("ModelEventId");
                 });
 
             modelBuilder.Entity("biletmajster_backend.Domain.ModelEvent", b =>
@@ -320,7 +315,7 @@ namespace biletmajster_backend.Migrations
 
             modelBuilder.Entity("biletmajster_backend.Domain.ModelEvent", b =>
                 {
-                    b.Navigation("EventPhotos");
+                    b.Navigation("EventsPhotos");
 
                     b.Navigation("Places");
 

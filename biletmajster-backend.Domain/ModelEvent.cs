@@ -23,11 +23,13 @@ public class ModelEvent
     public ICollection<Place> Places { get; set; }
     public List<Reservation> Reservations { get; set; }
     public Organizer Organizer { get; set; }
+    public List<EventPhotos> EventPhotos { get; set; }
     public ModelEvent()
     {
         Categories = new List<Category>();
         Places = new List<Place>();
         Reservations = new List<Reservation>();
+        EventPhotos = new List<EventPhotos>();
     }
     public void UpdateData(ModelEvent e)
     {
