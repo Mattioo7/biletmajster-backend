@@ -69,7 +69,7 @@ namespace biletmajster_backend.Controllers
                 return StatusCode(400, new ErrorResponse { Message = "Organizer not found" });
             }
 
-            if (organizer.Status != OrganizerAccountStatus.PendingForConfirmation)
+            if (organizer.Status != OrganizerAccountStatus.Pending)
             {
                 _logger.LogDebug($"Invalid status of organizer with id: {id}, status: {organizer.Status.ToString()}");
                 return StatusCode(400, new ErrorResponse { Message = "Organizer account is not pending for confirmation" });

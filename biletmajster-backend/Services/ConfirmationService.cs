@@ -33,7 +33,7 @@ public class ConfirmationService : IConfirmationService
         
         // set information about confirmation code and status
         await _accountConfirmationCodeRepository.UpdateOrganizerConfirmationCodeAsync(organizer, code);
-        await _organizersRepository.UpdateOrganizerAccountStatusAsync(organizer, OrganizerAccountStatus.PendingForConfirmation);
+        await _organizersRepository.UpdateOrganizerAccountStatusAsync(organizer, OrganizerAccountStatus.Pending);
         
         await _organizersRepository.SaveChangesAsync();
     }
