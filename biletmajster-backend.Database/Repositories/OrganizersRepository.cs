@@ -38,7 +38,7 @@ public class OrganizersRepository : BaseRepository<Organizer>, IOrganizersReposi
             Email = email,
             PasswordHash = passwordHash,
             PasswordSalt = passwordSalt,
-            Status = OrganizerAccountStatus.Created
+            Status = OrganizerAccountStatus.Pending
         };
 
         await DbSet.AddAsync(organizer);

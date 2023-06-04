@@ -22,7 +22,7 @@ public class ConfirmationServiceUnitTest
         PasswordHash = new byte[] { 1, 2, 3 },
         PasswordSalt = new byte[] { 1, 2, 3 },
         Events = new List<ModelEvent>(),
-        Status = OrganizerAccountStatus.Created
+        Status = OrganizerAccountStatus.Pending
     };
 
     [Fact]
@@ -43,7 +43,7 @@ public class ConfirmationServiceUnitTest
         var organizersRepositoryMock = new Mock<IOrganizersRepository>();
         organizersRepositoryMock
             .Setup(o => o.UpdateOrganizerAccountStatusAsync(It.Is<Organizer>(o => o.Id == _organizer.Id),
-                It.Is<OrganizerAccountStatus>(a => a == OrganizerAccountStatus.PendingForConfirmation)))
+                It.Is<OrganizerAccountStatus>(a => a == OrganizerAccountStatus.Pending)))
             .Returns(Task.CompletedTask);
 
         var loggerMock = new Mock<ILogger<ConfirmationService>>();
@@ -67,7 +67,7 @@ public class ConfirmationServiceUnitTest
 
         organizersRepositoryMock.Verify(
             x => x.UpdateOrganizerAccountStatusAsync(It.Is<Organizer>(o => o.Id == _organizer.Id),
-                It.Is<OrganizerAccountStatus>(a => a == OrganizerAccountStatus.PendingForConfirmation)), Times.Once);
+                It.Is<OrganizerAccountStatus>(a => a == OrganizerAccountStatus.Pending)), Times.Once);
     }
 
     [Fact]
